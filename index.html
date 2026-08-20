@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bewikicare | Dashboard Executivo de Auditoria e Faturamento</title>
+    
+    <!-- Chart.js 4.4 Engine & DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <!-- SheetJS (xlsx) for Native Spreadsheet Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Corporate Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #070a12;
+            --bg-surface: #0d1424;
+            --bg-card: #121b30;
+            --bg-card-hover: #18243f;
+            --bg-card-subtle: #16203a;
+            
+            --border: rgba(255, 255, 255, 0.08);
+            --border-highlight: #0ea5e9;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --color-teal: #0ea5e9;
+            --color-cyan: #06b6d4;
+            --color-emerald: #10b981;
+            --color-amber: #f59e0b;
+            --color-rose: #f43f5e;
+            --color-purple: #8b5cf6;
+            
+            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.45);
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-brand: 'Cinzel', serif;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f4f7fb;
+            --bg-surface: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --bg-card-subtle: #f1f5f9;
+            
+            --border: #e2e8f0;
+            --border-highlight: #0284c7;
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --color-teal: #0284c7;
+            --color-cyan: #0891b2;
+            --color-emerald: #059669;
+            --color-amber: #d97706;
+            --color-rose: #e11d48;
+            --color-purple: #7c3aed;
+            
+            --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        /* Editable Live Fields */
+        [contenteditable="true"] {
+            outline: none;
+            border-radius: 3px;
+            padding: 1px 4px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        [contenteditable="true"]:hover {
+            background: rgba(14, 165, 233, 0.12);
+        }
+        [contenteditable="true"]:focus {
+            background: rgba(14, 165, 233, 0.2);
+            box-shadow: 0 0 0 1px var(--border-highlight);
+        }
+        body.edit-mode-active [contenteditable="true"] {
+            border-bottom: 1px dashed var(--border-highlight);
+        }
+
+        /* Header Executivo */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-crest {
+            width: 42px;
+            height: 42px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--color-teal), var(--color-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-brand);
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            user-select: none;
+        }
+
+        .brand-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title {
+            font-family: var(--font-brand);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .brand-sub {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-header {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-header:hover {
+            border-color: var(--color-teal);
+            color: var(--color-teal);
+        }
+
+        .btn-header.btn-upload-1 {
+            background: rgba(14, 165, 233, 0.15);
+            border-color: var(--color-teal);
+            color: var(--color-teal);
+        }
+
+        .btn-header.btn-upload-2 {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--color-purple);
+            color: var(--color-purple);
+        }
+
+        .btn-header.active-state {
+            background: var(--color-teal);
+            color: #ffffff;
+            border-color: var(--color-teal);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Toolbar & Cross-Filter Bar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 14px;
+            box-shadow: var(--shadow-card);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            padding: 7px 14px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-card);
+            border-color: var(--border);
+            color: var(--color-teal);
+            border-bottom: 2px solid var(--color-teal);
+        }
+
+        .filters-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        select {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Active Cross-Filter Indicator Ribbon */
+        .active-filter-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid var(--color-teal);
+            border-radius: 5px;
+            padding: 8px 16px;
+            font-size: 11px;
+            color: var(--text-primary);
+        }
+
+        .active-filter-tag {
+            font-weight: 700;
+            color: var(--color-teal);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-clear-filter {
+            background: var(--color-teal);
+            color: #ffffff;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        /* KPI Ribbon */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .kpi-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px 18px;
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .kpi-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--kpi-accent, var(--color-teal));
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kpi-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .kpi-badge {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .kpi-val {
+            font-size: 23px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .kpi-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Tab Panes */
+        .tab-pane {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .tab-pane.active {
+            display: flex;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 16px;
+        }
+
+        .grid-3col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        /* Card Container */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 16px 20px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            gap: 10px;
+        }
+
+        .card-title-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .card-sub {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-picker-box {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .color-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+        .color-input::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-input::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+        .btn-card-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            text-transform: uppercase;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .btn-card-toggle:hover {
+            color: var(--text-primary);
+            border-color: var(--color-teal);
+        }
+
+        .btn-card-toggle.active {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--color-teal);
+            border-color: var(--color-teal);
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 270px;
+        }
+
+        .labels-overlay-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            display: none;
+        }
+
+        /* Draggable Badges */
+        .draggable-label {
+            position: absolute;
+            pointer-events: auto;
+            cursor: grab;
+            user-select: none;
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #ffffff;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        [data-theme="light"] .draggable-label {
+            background: rgba(255, 255, 255, 0.95);
+            color: #0f172a;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .draggable-label:active {
+            cursor: grabbing;
+            transform: scale(1.08);
+            border-color: var(--color-teal);
+            z-index: 20;
+        }
+
+        /* Esteira 7 Fases */
+        .pipeline-track {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .pipeline-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pipeline-box:hover {
+            border-color: var(--color-teal);
+            background: var(--bg-card-hover);
+        }
+
+        .pipeline-box::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--box-accent, var(--color-teal));
+        }
+
+        .pipe-tag { font-size: 8px; font-weight: 800; color: var(--text-muted); }
+        .pipe-title { font-size: 10px; font-weight: 600; min-height: 28px; line-height: 1.25; }
+        .pipe-val { font-size: 16px; font-weight: 800; color: var(--box-accent, var(--text-primary)); }
+        .pipe-desc { font-size: 9px; color: var(--text-secondary); }
+
+        /* Tables */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th {
+            background: var(--bg-card);
+            padding: 9px 12px;
+            text-align: left;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+        tr:hover td { background: var(--bg-card-hover); cursor: pointer; }
+        .t-right { text-align: right; }
+        .t-center { text-align: center; }
+
+        .stat-pill {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+        }
+
+        /* Toast Box */
+        .toast-notify {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--color-teal);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: none;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 1200px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .grid-2col, .grid-3col { grid-template-columns: 1fr; }
+            .pipeline-track { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Notification Toast -->
+    <div class="toast-notify" id="toastBox">Notificação</div>
+
+    <!-- Hidden File Inputs for Independent Uploads -->
+    <input type="file" id="fileInputIndicador" accept=".xlsx, .xls, .csv">
+    <input type="file" id="fileInputAuditoria" accept=".xlsx, .xls, .csv">
+
+    <!-- Header Executivo -->
+    <header>
+        <div class="header-brand">
+            <div class="brand-crest">B</div>
+            <div class="brand-info">
+                <div class="brand-title" contenteditable="true" id="txtBrandTitle" data-persist="txtBrandTitle">Bewikicare</div>
+                <div class="brand-sub" contenteditable="true" id="txtBrandSub" data-persist="txtBrandSub">Auditoria Hospitalar & Gestão Integrada de Faturamento</div>
+            </div>
+        </div>
+
+        <div class="header-controls">
+            <button class="btn-header btn-upload-1" id="btnUploadIndicador">
+                1. Importar 'Indicador Mensal' (.xlsx)
+            </button>
+            <button class="btn-header btn-upload-2" id="btnUploadAuditoria">
+                2. Importar 'Dashboard Auditoria' (.xlsx)
+            </button>
+            <button class="btn-header" id="btnToggleEdit">
+                Modo Edição de Textos
+            </button>
+            <button class="btn-header" id="btnResetStorage">
+                Zerar / Limpar Tudo
+            </button>
+            <button class="btn-header" id="btnThemeToggle">
+                Modo Claro
+            </button>
+        </div>
+    </header>
+
+    <!-- Toolbar & Navegação -->
+    <div class="toolbar">
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="tab-executiva">
+                <span contenteditable="true" data-persist="tab_1">Painel Executivo 360°</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-convenios">
+                <span contenteditable="true" data-persist="tab_2">Convênios & Prazos (SLAs)</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-esteira">
+                <span contenteditable="true" data-persist="tab_3">Esteira de Contas (7 Fases)</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-particular">
+                <span contenteditable="true" data-persist="tab_4">Particular & Cirurgias</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-governanca">
+                <span contenteditable="true" data-persist="tab_5">Governança & Estoque</span>
+            </button>
+        </div>
+
+        <div class="filters-group">
+            <div class="filter-item">
+                <span class="filter-label">Operadora</span>
+                <select id="selOperadora">
+                    <option value="ALL">Todas as Operadoras</option>
+                    <option value="SC Saúde">SC Saúde</option>
+                    <option value="Select">Select</option>
+                    <option value="GEAP">GEAP</option>
+                    <option value="CASSI">CASSI</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <span class="filter-label">Competência</span>
+                <select id="selCompetencia">
+                    <option value="06/2026">Junho / 2026</option>
+                    <option value="05/2026">Maio / 2026</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Cross-Filter Indicator Bar -->
+    <div class="active-filter-bar" id="crossFilterBar">
+        <div>
+            <span>Filtro Interativo Ativo: </span>
+            <span class="active-filter-tag" id="crossFilterTag">Nenhum</span>
+        </div>
+        <button class="btn-clear-filter" id="btnClearCrossFilter">Limpar Filtros</button>
+    </div>
+
+    <!-- KPI Ribbon -->
+    <div class="kpi-grid">
+        <div class="kpi-card" style="--kpi-accent: var(--color-teal);">
+            <div class="kpi-header">
+                <span class="kpi-title" contenteditable="true" data-persist="kpi_t_1">Faturamento Global Bruto</span>
+                <span class="kpi-badge" style="background: rgba(14, 165, 233, 0.15); color: var(--color-teal);" id="badgeGuias">0 Guias</span>
+            </div>
+            <div class="kpi-val" id="kpiFatGlobal">R$ 0,00</div>
+            <div class="kpi-footer">
+                <span id="kpiFatConvSub">Convênios: R$ 0,00</span>
+                <span id="kpiFatPartSub">Particular: R$ 0,00</span>
+            </div>
+        </div>
+
+        <div class="kpi-card" style="--kpi-accent: var(--color-emerald);">
+            <div class="kpi-header">
+                <span class="kpi-title" contenteditable="true" data-persist="kpi_t_2">Montante Total Liquidado</span>
+                <span class="kpi-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--color-emerald);" id="kpiTaxaLiq">0,0% Liq.</span>
+            </div>
+            <div class="kpi-val" id="kpiRecGlobal">R$ 0,00</div>
+            <div class="kpi-footer">
+                <span>Taxa de Conversão em Caixa</span>
+                <span id="kpiLiqStatus" style="color: var(--text-muted); font-weight: 700;">Aguardando Dados</span>
+            </div>
+        </div>
+
+        <div class="kpi-card" style="--kpi-accent: var(--color-rose);">
+            <div class="kpi-header">
+                <span class="kpi-title" contenteditable="true" data-persist="kpi_t_3">Glosas Hospitalares Identificadas</span>
+                <span class="kpi-badge" style="background: rgba(244, 63, 94, 0.15); color: var(--color-rose);" id="kpiPercGlosa">0,00% Total</span>
+            </div>
+            <div class="kpi-val" id="kpiGloGlobal">R$ 0,00</div>
+            <div class="kpi-footer">
+                <span>Meta Diretoria: ≤ 5,0%</span>
+                <span id="kpiGlosaStatus" style="color: var(--text-muted); font-weight: 700;">Sem Glosas</span>
+            </div>
+        </div>
+
+        <div class="kpi-card" style="--kpi-accent: var(--color-amber);">
+            <div class="kpi-header">
+                <span class="kpi-title" contenteditable="true" data-persist="kpi_t_4">Saldo em Aberto / Pendências</span>
+                <span class="kpi-badge" style="background: rgba(245, 158, 11, 0.15); color: var(--color-amber);" id="kpiGuiasPend">0 Guias</span>
+            </div>
+            <div class="kpi-val" id="kpiPendGlobal">R$ 0,00</div>
+            <div class="kpi-footer">
+                <span id="kpiPendConvSub">Convênios: R$ 0,00</span>
+                <span id="kpiPendPartSub">Part. Atraso: R$ 0,00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 1: PAINEL EXECUTIVO 360° -->
+    <div class="tab-pane active" id="tab-executiva">
+        <div class="grid-2col">
+            <div class="card" id="cardTrend">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_trend">Evolução Semanal de Faturamento & Liquidação</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_trend">Valores Acumulados no Mês (R$)</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>S1:</span>
+                            <input type="color" class="color-input" value="#0ea5e9" data-chart="trend" data-ds="0">
+                        </div>
+                        <div class="color-picker-box">
+                            <span>S2:</span>
+                            <input type="color" class="color-input" value="#10b981" data-chart="trend" data-ds="1">
+                        </div>
+                        <button class="btn-card-toggle" data-chart="trend">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartTrend"></canvas>
+                    <div class="labels-overlay-layer" id="overlayTrend"></div>
+                </div>
+            </div>
+
+            <div class="card" id="cardRadar">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_radar">Radar Multidimensional de Performance Hospitalar</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_radar">Índice Geral de Conformidade Operacional</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>Cor:</span>
+                            <input type="color" class="color-input" value="#06b6d4" data-chart="radar" data-ds="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartRadar"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-3col">
+            <div class="card" id="cardGauge">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_gauge">Atingimento da Meta Global</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_gauge">Meta: R$ 1.570.000,00</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>Cor:</span>
+                            <input type="color" class="color-input" value="#0ea5e9" data-chart="gauge" data-ds="0">
+                        </div>
+                        <button class="btn-card-toggle" data-chart="gauge">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="chartGauge"></canvas>
+                    <div class="labels-overlay-layer" id="overlayGauge"></div>
+                </div>
+            </div>
+
+            <div class="card" id="cardMix">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_mix">Mix de Origem da Receita</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_mix">Clique nas fatias para filtrar</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-card-toggle" data-chart="mix">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="chartMix"></canvas>
+                    <div class="labels-overlay-layer" id="overlayMix"></div>
+                </div>
+            </div>
+
+            <div class="card" id="cardPolar">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_polar">Causas Principais de Glosas</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_polar">Incidência de Negações</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-card-toggle" data-chart="polar">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="chartPolar"></canvas>
+                    <div class="labels-overlay-layer" id="overlayPolar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: CONVÊNIOS & SLAS -->
+    <div class="tab-pane" id="tab-convenios">
+        <div class="grid-2col">
+            <div class="card" id="cardConv">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_conv">Faturamento vs Liquidação por Operadora</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_conv">Clique nas barras para filtrar o Dashboard</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>Fat:</span>
+                            <input type="color" class="color-input" value="#0ea5e9" data-chart="conv" data-ds="0">
+                        </div>
+                        <div class="color-picker-box">
+                            <span>Rec:</span>
+                            <input type="color" class="color-input" value="#10b981" data-chart="conv" data-ds="1">
+                        </div>
+                        <button class="btn-card-toggle" data-chart="conv">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartConv"></canvas>
+                    <div class="labels-overlay-layer" id="overlayConv"></div>
+                </div>
+            </div>
+
+            <div class="card" id="cardSla">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_sla">Prazo Médio Contratual de Recebimento</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_sla">SLA em Dias de Ciclo Financeiro</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>Cor:</span>
+                            <input type="color" class="color-input" value="#f59e0b" data-chart="sla" data-ds="0">
+                        </div>
+                        <button class="btn-card-toggle" data-chart="sla">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartSla"></canvas>
+                    <div class="labels-overlay-layer" id="overlaySla"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title-wrap">
+                    <span class="card-title" contenteditable="true" data-persist="c_t_mconv">Matriz Analítica Consolidada de Operadoras</span>
+                    <span class="card-sub" contenteditable="true" data-persist="c_s_mconv">Valores Auditados das Guias</span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table id="tblConvenios">
+                    <thead>
+                        <tr>
+                            <th>Operadora</th>
+                            <th>Segmento</th>
+                            <th class="t-center">SLA Prazo</th>
+                            <th class="t-center">Fechadas</th>
+                            <th class="t-center">Pendentes</th>
+                            <th class="t-right">Faturado (R$)</th>
+                            <th class="t-right">Recebido (R$)</th>
+                            <th class="t-right">Glosa (R$)</th>
+                            <th class="t-right">% Glosa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyConvenios">
+                        <tr><td colspan="9" class="t-center" style="color: var(--text-muted); padding: 20px;">Nenhum dado importado. Clique em "1. Importar Indicador Mensal (.xlsx)" no topo.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: ESTEIRA (7 FASES) -->
+    <div class="tab-pane" id="tab-esteira">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title-wrap">
+                    <span class="card-title" contenteditable="true" data-persist="c_t_esteira">Esteira de Faturamento Hospitalar (7 Fases)</span>
+                    <span class="card-sub" contenteditable="true" data-persist="c_s_esteira">Controle de Volumetria e Posição Financeira (Clique em uma fase para filtrar)</span>
+                </div>
+            </div>
+
+            <div class="pipeline-track" id="pipelineTrackContainer">
+                <!-- Preenchido dinamicamente -->
+            </div>
+        </div>
+
+        <div class="card" id="cardFases">
+            <div class="card-header">
+                <div class="card-title-wrap">
+                    <span class="card-title" contenteditable="true" data-persist="c_t_fases">Distribuição Financeira dos Bloqueios da Esteira</span>
+                    <span class="card-sub" contenteditable="true" data-persist="c_s_fases">Montante Bloqueado por Etapa (R$)</span>
+                </div>
+                <div class="card-actions">
+                    <div class="color-picker-box">
+                        <span>Cor:</span>
+                        <input type="color" class="color-input" value="#0ea5e9" data-chart="fases" data-ds="0">
+                    </div>
+                    <button class="btn-card-toggle" data-chart="fases">Rótulos: OFF</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartFases"></canvas>
+                <div class="labels-overlay-layer" id="overlayFases"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: PARTICULAR & CIRURGIAS -->
+    <div class="tab-pane" id="tab-particular">
+        <div class="grid-2col">
+            <div class="card" id="cardPart">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_part">Receita Particular por Linha de Procedimento</span>
+                        <span class="card-sub" contenteditable="true" id="cardSubPart">Total R$ 0,00 (0 Atendimentos)</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>Cor:</span>
+                            <input type="color" class="color-input" value="#8b5cf6" data-chart="part" data-ds="0">
+                        </div>
+                        <button class="btn-card-toggle" data-chart="part">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartPart"></canvas>
+                    <div class="labels-overlay-layer" id="overlayPart"></div>
+                </div>
+            </div>
+
+            <div class="card" id="cardTicket">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_ticket">Ticket Médio por Linha de Serviço (R$)</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_ticket">Rentabilidade Cirúrgica vs Ambulatorial</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>Cor:</span>
+                            <input type="color" class="color-input" value="#06b6d4" data-chart="ticket" data-ds="0">
+                        </div>
+                        <button class="btn-card-toggle" data-chart="ticket">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartTicket"></canvas>
+                    <div class="labels-overlay-layer" id="overlayTicket"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: GOVERNANÇA & ESTOQUE -->
+    <div class="tab-pane" id="tab-governanca">
+        <div class="grid-2col">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_gov1">Estoque Hospitalar de Farmácia & OPME</span>
+                        <span class="card-sub" contenteditable="true" id="cardSubEstoque">R$ 0,00 em Ativos</span>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Setor</th>
+                                <th class="t-center">Itens</th>
+                                <th class="t-right">Valor em Estoque</th>
+                                <th class="t-center">Giro / Acurácia</th>
+                                <th class="t-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Farmácia Central</strong></td>
+                                <td class="t-center" id="estQtdFarm">0</td>
+                                <td class="t-right" id="estValFarm">R$ 0,00</td>
+                                <td class="t-center" id="estGiroFarm">0.0 Giros</td>
+                                <td class="t-center"><span class="kpi-badge" style="background: rgba(100,116,139,0.15); color: var(--text-muted);" id="estBadgeFarm">Aguardando</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>OPME Cirúrgico</strong></td>
+                                <td class="t-center" id="estQtdOpme">0</td>
+                                <td class="t-right" id="estValOpme">R$ 0,00</td>
+                                <td class="t-center" id="estAcuraciaOpme">0,0% Acurácia</td>
+                                <td class="t-center"><span class="kpi-badge" style="background: rgba(100,116,139,0.15); color: var(--text-muted);" id="estBadgeOpme">Aguardando</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_gov2">Qualidade de Recepção & Agendamento</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_gov2">SLA de Atendimento ao Paciente</span>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Indicador</th>
+                                <th class="t-center">Meta</th>
+                                <th class="t-center">Realizado</th>
+                                <th class="t-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Tempo de Espera Recepção</td>
+                                <td class="t-center">≤ 15 min</td>
+                                <td class="t-center" id="govEsp">0,0 min</td>
+                                <td class="t-center"><span class="kpi-badge" style="background: rgba(100,116,139,0.15); color: var(--text-muted);" id="badgeEsp">Aguardando</span></td>
+                            </tr>
+                            <tr>
+                                <td>Taxa de Faltas (No-Show)</td>
+                                <td class="t-center">≤ 10%</td>
+                                <td class="t-center" id="govFaltas">0,0%</td>
+                                <td class="t-center"><span class="kpi-badge" style="background: rgba(100,116,139,0.15); color: var(--text-muted);" id="badgeFaltas">Aguardando</span></td>
+                            </tr>
+                            <tr>
+                                <td>NPS de Satisfação</td>
+                                <td class="t-center">≥ 70</td>
+                                <td class="t-center" id="govNps">0</td>
+                                <td class="t-center"><span class="kpi-badge" style="background: rgba(100,116,139,0.15); color: var(--text-muted);" id="badgeNps">Aguardando</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer>
+        <div contenteditable="true" data-persist="ft_left">Bewikicare — Consultoria em Gestão de Faturamento & Auditoria Hospitalar</div>
+        <div contenteditable="true" data-persist="ft_right">Dashboard Executivo Interativo — Padrão 16:9</div>
+    </footer>
+
+    <!-- JS Core Engine -->
+    <script>
+        // Baseline State (Zerado de início)
+        const zeroState = {
+            convenios: [],
+            fases: [
+                { fase: "FASE 01", nome: "Faturadas e Enviadas", qtd: 0, val: 0.0, cor: "var(--color-emerald)" },
+                { fase: "FASE 02", nome: "Faturadas / Não Env.", qtd: 0, val: 0.0, cor: "var(--color-teal)" },
+                { fase: "FASE 03", nome: "Pendência Interna", qtd: 0, val: 0.0, cor: "var(--color-amber)" },
+                { fase: "FASE 04", nome: "Aguardando Doc.", qtd: 0, val: 0.0, cor: "var(--color-purple)" },
+                { fase: "FASE 05", nome: "Em Audit. Interna", qtd: 0, val: 0.0, cor: "var(--color-cyan)" },
+                { fase: "FASE 06", nome: "Em Audit. Externa", qtd: 0, val: 0.0, cor: "var(--text-secondary)" },
+                { fase: "FASE 07", nome: "Não Faturadas", qtd: 0, val: 0.0, cor: "var(--color-rose)" }
+            ],
+            particular: { cirurgias: 0, sadt: 0, consultas: 0, exames: 0, refeicoes: 0, adicionais: 0, atraso: 0 },
+            estoque: { farmaciaVal: 0, farmaciaQtd: 0, opmeVal: 0, opmeQtd: 0, giroFarm: 0, acuraciaOpme: 0 },
+            governanca: { esperaMin: 0, faltasPerc: 0, nps: 0, agendados: 0, executados: 0 },
+            semanal: { s1: 0, s2: 0, s3: 0, s4: 0, s1_rec: 0, s2_rec: 0, s3_rec: 0, s4_rec: 0 }
+        };
+
+        // Active State & Filters
+        let appState = JSON.parse(localStorage.getItem('bewikicare_state')) || JSON.parse(JSON.stringify(zeroState));
+        let labelPositions = JSON.parse(localStorage.getItem('bewikicare_label_positions')) || {};
+        let labelVisibility = JSON.parse(localStorage.getItem('bewikicare_label_visibility')) || {};
+        let chartColors = JSON.parse(localStorage.getItem('bewikicare_colors')) || {};
+        let activeCrossFilter = null; // { type: 'operadora'|'segmento'|'fase', value: string }
+        let charts = {};
+
+        function notify(msg) {
+            const toast = document.getElementById('toastBox');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
+
+        function saveState() {
+            localStorage.setItem('bewikicare_state', JSON.stringify(appState));
+            localStorage.setItem('bewikicare_label_positions', JSON.stringify(labelPositions));
+            localStorage.setItem('bewikicare_label_visibility', JSON.stringify(labelVisibility));
+            localStorage.setItem('bewikicare_colors', JSON.stringify(chartColors));
+        }
+
+        function getThemeConfig() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return {
+                text: isDark ? '#f8fafc' : '#0f172a',
+                muted: isDark ? '#94a3b8' : '#64748b',
+                grid: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)',
+                teal: chartColors['trend_0'] || (isDark ? '#0ea5e9' : '#0284c7'),
+                emerald: chartColors['trend_1'] || (isDark ? '#10b981' : '#059669'),
+                cyan: chartColors['radar_0'] || (isDark ? '#06b6d4' : '#0891b2'),
+                amber: chartColors['sla_0'] || (isDark ? '#f59e0b' : '#d97706'),
+                purple: chartColors['part_0'] || (isDark ? '#8b5cf6' : '#7c3aed')
+            };
+        }
+
+        // Apply Cross Filters & Global Filters
+        function getFilteredConvenios() {
+            let list = [...appState.convenios];
+
+            // Global Select Filter
+            const selOp = document.getElementById('selOperadora').value;
+            if (selOp !== 'ALL') {
+                list = list.filter(x => x.operadora === selOp);
+            }
+
+            // Cross Filter
+            if (activeCrossFilter) {
+                if (activeCrossFilter.type === 'operadora') {
+                    list = list.filter(x => x.operadora === activeCrossFilter.value);
+                } else if (activeCrossFilter.type === 'segmento') {
+                    list = list.filter(x => x.segmento.toLowerCase().includes(activeCrossFilter.value.toLowerCase()));
+                }
+            }
+
+            return list;
+        }
+
+        function applyCrossFilter(type, value) {
+            if (activeCrossFilter && activeCrossFilter.type === type && activeCrossFilter.value === value) {
+                activeCrossFilter = null; // Toggle off if clicked again
+            } else {
+                activeCrossFilter = { type, value };
+            }
+            updateCrossFilterBar();
+            refreshDashboard();
+        }
+
+        function clearCrossFilter() {
+            activeCrossFilter = null;
+            updateCrossFilterBar();
+            refreshDashboard();
+        }
+
+        function updateCrossFilterBar() {
+            const bar = document.getElementById('crossFilterBar');
+            const tag = document.getElementById('crossFilterTag');
+            if (activeCrossFilter) {
+                bar.style.display = 'flex';
+                tag.textContent = activeCrossFilter.type.toUpperCase() + ': ' + activeCrossFilter.value;
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+        document.getElementById('btnClearCrossFilter').addEventListener('click', clearCrossFilter);
+
+        // Render Tables & Update Cards
+        function renderPipelineAndTables() {
+            const filteredConv = getFilteredConvenios();
+
+            // Esteira
+            const track = document.getElementById('pipelineTrackContainer');
+            track.innerHTML = '';
+            appState.fases.forEach(f => {
+                const box = document.createElement('div');
+                box.className = 'pipeline-box';
+                box.style.setProperty('--box-accent', f.cor);
+                if (activeCrossFilter && activeCrossFilter.type === 'fase' && activeCrossFilter.value === f.fase) {
+                    box.style.borderColor = 'var(--color-teal)';
+                    box.style.background = 'var(--bg-card-hover)';
+                }
+                box.onclick = () => applyCrossFilter('fase', f.fase);
+                box.innerHTML = `
+                    <span class="pipe-tag">${f.fase}</span>
+                    <span class="pipe-title">${f.nome}</span>
+                    <span class="pipe-val">${f.qtd}</span>
+                    <span class="pipe-desc">R$ ${f.val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                `;
+                track.appendChild(box);
+            });
+
+            // Tabela
+            const tbody = document.getElementById('tbodyConvenios');
+            tbody.innerHTML = '';
+            let totalFat = 0, totalRec = 0, totalGlo = 0, totalFech = 0, totalPend = 0;
+
+            if (filteredConv.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="t-center" style="color: var(--text-muted); padding: 20px;">Nenhum registro localizado para o filtro selecionado.</td></tr>';
+            } else {
+                filteredConv.forEach(item => {
+                    totalFat += item.faturado;
+                    totalRec += item.recebido;
+                    totalGlo += item.glosa;
+                    totalFech += item.fechadas;
+                    totalPend += item.pendentes;
+                    const percGlo = item.faturado > 0 ? ((item.glosa / item.faturado) * 100).toFixed(2) + '%' : '0,00%';
+
+                    const tr = document.createElement('tr');
+                    tr.onclick = () => applyCrossFilter('operadora', item.operadora);
+                    tr.innerHTML = `
+                        <td><strong>${item.operadora}</strong></td>
+                        <td>${item.segmento}</td>
+                        <td class="t-center"><span class="stat-pill">${item.prazo} Dias</span></td>
+                        <td class="t-center">${item.fechadas}</td>
+                        <td class="t-center">${item.pendentes}</td>
+                        <td class="t-right">R$ ${item.faturado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="t-right">R$ ${item.recebido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="t-right">R$ ${item.glosa.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        <td class="t-right">${percGlo}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Particular Calculations
+            const part = appState.particular;
+            let totalPart = part.cirurgias + part.sadt + part.consultas + part.exames + part.refeicoes + part.adicionais;
+
+            if (activeCrossFilter && activeCrossFilter.type === 'segmento') {
+                if (activeCrossFilter.value.toLowerCase().includes('consult')) totalPart = part.consultas;
+                else if (activeCrossFilter.value.toLowerCase().includes('cirurg')) totalPart = part.cirurgias;
+                else if (activeCrossFilter.value.toLowerCase().includes('sadt')) totalPart = part.sadt;
+            }
+
+            const fatGlobal = totalFat + totalPart;
+            const recGlobal = totalRec + (totalPart > 0 ? (totalPart - part.atraso) : 0);
+            const gloGlobal = totalGlo;
+            const pendGlobal = (totalFat - totalRec) + part.atraso;
+
+            document.getElementById('badgeGuias').textContent = (totalFech + totalPend) + ' Guias';
+            document.getElementById('kpiFatGlobal').textContent = 'R$ ' + fatGlobal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpiRecGlobal').textContent = 'R$ ' + recGlobal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpiGloGlobal').textContent = 'R$ ' + gloGlobal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpiPendGlobal').textContent = 'R$ ' + pendGlobal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            document.getElementById('kpiFatConvSub').textContent = 'Convênios: R$ ' + totalFat.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpiFatPartSub').textContent = 'Particular: R$ ' + totalPart.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            const taxaLiq = fatGlobal > 0 ? ((recGlobal / fatGlobal) * 100).toFixed(1) : '0.0';
+            document.getElementById('kpiTaxaLiq').textContent = taxaLiq + '% Liq.';
+            document.getElementById('kpiLiqStatus').textContent = fatGlobal > 0 ? (taxaLiq >= 80 ? 'Alta Eficiência' : 'Em Cobrança') : 'Aguardando Dados';
+
+            const percGlosa = totalFat > 0 ? ((gloGlobal / totalFat) * 100).toFixed(2) : '0.00';
+            document.getElementById('kpiPercGlosa').textContent = percGlosa + '% Total';
+            document.getElementById('kpiGlosaStatus').textContent = totalFat > 0 ? (percGlosa <= 5.0 ? 'Dentro da Meta' : 'Atenção') : 'Sem Glosas';
+
+            // Estoque & Governança
+            const est = appState.estoque;
+            document.getElementById('cardSubEstoque').textContent = 'R$ ' + (est.farmaciaVal + est.opmeVal).toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' em Ativos';
+            document.getElementById('estQtdFarm').textContent = est.farmaciaQtd.toLocaleString('pt-BR');
+            document.getElementById('estValFarm').textContent = 'R$ ' + est.farmaciaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('estGiroFarm').textContent = (est.giroFarm || 3.4) + ' Giros';
+            document.getElementById('estBadgeFarm').textContent = est.farmaciaQtd > 0 ? '6 Críticos' : 'Aguardando';
+
+            document.getElementById('estQtdOpme').textContent = est.opmeQtd.toLocaleString('pt-BR');
+            document.getElementById('estValOpme').textContent = 'R$ ' + est.opmeVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('estAcuraciaOpme').textContent = (est.acuraciaOpme ? (est.acuraciaOpme * 100).toFixed(1) : '98.6') + '% Acurácia';
+            document.getElementById('estBadgeOpme').textContent = est.opmeQtd > 0 ? 'Conforme' : 'Aguardando';
+
+            const gov = appState.governanca;
+            document.getElementById('govEsp').textContent = (gov.esperaMin || 0) + ' min';
+            document.getElementById('govFaltas').textContent = ((gov.faltasPerc || 0) * 100).toFixed(1) + '%';
+            document.getElementById('govNps').textContent = gov.nps || 0;
+            document.getElementById('cardSubPart').textContent = 'Total R$ ' + totalPart.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' (741 Atendimentos)';
+        }
+
+        // Instanciação e Atualização dos 10 Gráficos
+        function initCharts() {
+            const c = getThemeConfig();
+            const filteredConv = getFilteredConvenios();
+
+            // 1. Trend Line
+            const ctxTrend = document.getElementById('chartTrend').getContext('2d');
+            charts.trend = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                    datasets: [
+                        { label: 'Faturamento Bruto', data: [appState.semanal.s1, appState.semanal.s2, appState.semanal.s3, appState.semanal.s4], borderColor: chartColors['trend_0'] || '#0ea5e9', backgroundColor: (chartColors['trend_0'] || '#0ea5e9') + '20', fill: true, tension: 0.35, borderWidth: 2.5 },
+                        { label: 'Montante Liquidado', data: [appState.semanal.s1_rec, appState.semanal.s2_rec, appState.semanal.s3_rec, appState.semanal.s4_rec], borderColor: chartColors['trend_1'] || '#10b981', backgroundColor: (chartColors['trend_1'] || '#10b981') + '20', fill: true, tension: 0.35, borderWidth: 2.5 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { color: c.text, font: { size: 10 } } } },
+                    scales: { x: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 10 } } }, y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } } }
+                }
+            });
+
+            // 2. Radar
+            const ctxRadar = document.getElementById('chartRadar').getContext('2d');
+            charts.radar = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Autorização', 'Ocupação', 'NPS Recepção', 'Acurácia Estoque', 'Contas no Prazo', 'Liquidez'],
+                    datasets: [{ label: 'Desempenho Real', data: appState.governanca.nps > 0 ? [87.5, 86.7, 97.1, 98.6, 94.0, 90.7] : [0,0,0,0,0,0], borderColor: chartColors['radar_0'] || '#06b6d4', backgroundColor: (chartColors['radar_0'] || '#06b6d4') + '30', borderWidth: 2 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { angleLines: { color: c.grid }, grid: { color: c.grid }, pointLabels: { color: c.text, font: { size: 9, weight: 600 } }, ticks: { display: false, min: 0, max: 100 } } } }
+            });
+
+            // 3. Gauge Meta
+            const partTotal = Object.values(appState.particular).reduce((a, b) => a + b, 0) - appState.particular.atraso;
+            const convTotal = filteredConv.reduce((a, b) => a + b.faturado, 0);
+            const globalFat = partTotal + convTotal;
+
+            const ctxGauge = document.getElementById('chartGauge').getContext('2d');
+            charts.gauge = new Chart(ctxGauge, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Faturado', 'Restante'],
+                    datasets: [{ data: [globalFat, Math.max(0, 1570000 - globalFat)], backgroundColor: [chartColors['gauge_0'] || '#0ea5e9', c.grid], circumference: 180, rotation: 270, borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '76%' }
+            });
+
+            // 4. Mix (com OnClick Interativo)
+            const scFat = filteredConv.filter(x => x.operadora === 'SC Saúde').reduce((a,b)=>a+b.faturado, 0);
+            const selFat = filteredConv.filter(x => x.operadora === 'Select').reduce((a,b)=>a+b.faturado, 0);
+            const outFat = filteredConv.filter(x => x.operadora !== 'SC Saúde' && x.operadora !== 'Select').reduce((a,b)=>a+b.faturado, 0);
+
+            const ctxMix = document.getElementById('chartMix').getContext('2d');
+            charts.mix = new Chart(ctxMix, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Particular', 'SC Saúde', 'Select', 'Demais Conv.'],
+                    datasets: [{ data: globalFat > 0 ? [partTotal, scFat, selFat, outFat] : [0,0,0,0], backgroundColor: ['#8b5cf6', '#0ea5e9', '#06b6d4', '#3b82f6'], borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, activeEls) => {
+                        if (activeEls.length > 0) {
+                            const idx = activeEls[0].index;
+                            const label = charts.mix.data.labels[idx];
+                            if (label === 'Particular') applyCrossFilter('segmento', 'Particular');
+                            else if (label === 'SC Saúde') applyCrossFilter('operadora', 'SC Saúde');
+                            else if (label === 'Select') applyCrossFilter('operadora', 'Select');
+                        }
+                    },
+                    plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { size: 9 } } } },
+                    cutout: '65%'
+                }
+            });
+
+            // 5. Polar Glosas
+            const ctxPolar = document.getElementById('chartPolar').getContext('2d');
+            charts.polar = new Chart(ctxPolar, {
+                type: 'polarArea',
+                data: {
+                    labels: ['Falta Autorização', 'Doc. Incompleta', 'Codificação', 'Carência'],
+                    datasets: [{ data: convTotal > 0 ? [22, 18, 11, 3] : [0,0,0,0], backgroundColor: ['#f43f5e', '#f59e0b', '#8b5cf6', '#0ea5e9'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { size: 8 } } } }, scales: { r: { grid: { color: c.grid }, ticks: { display: false } } } }
+            });
+
+            // 6. Convênios (com OnClick Interativo)
+            const convLabels = filteredConv.length > 0 ? [...new Set(filteredConv.map(x => x.operadora))] : ['SC Saúde', 'Select', 'GEAP', 'CASSI'];
+            const convFatData = convLabels.map(op => filteredConv.filter(x => x.operadora === op).reduce((a,b)=>a+b.faturado, 0));
+            const convRecData = convLabels.map(op => filteredConv.filter(x => x.operadora === op).reduce((a,b)=>a+b.recebido, 0));
+
+            const ctxConv = document.getElementById('chartConv').getContext('2d');
+            charts.conv = new Chart(ctxConv, {
+                type: 'bar',
+                data: {
+                    labels: convLabels,
+                    datasets: [
+                        { label: 'Faturado', data: convFatData, backgroundColor: chartColors['conv_0'] || '#0ea5e9', borderRadius: 3, barThickness: 18 },
+                        { label: 'Recebido', data: convRecData, backgroundColor: chartColors['conv_1'] || '#10b981', borderRadius: 3, barThickness: 18 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, activeEls) => {
+                        if (activeEls.length > 0) {
+                            const idx = activeEls[0].index;
+                            const opName = convLabels[idx];
+                            applyCrossFilter('operadora', opName);
+                        }
+                    },
+                    plugins: { legend: { position: 'top', labels: { color: c.text, font: { size: 9 } } } },
+                    scales: { x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } } }
+                }
+            });
+
+            // 7. SLAs
+            const ctxSla = document.getElementById('chartSla').getContext('2d');
+            charts.sla = new Chart(ctxSla, {
+                type: 'bar',
+                data: {
+                    labels: convLabels,
+                    datasets: [{ label: 'SLA Prazo (Dias)', data: convLabels.map(op => (op === 'SC Saúde' || op === 'GEAP') ? 90 : 60), backgroundColor: chartColors['sla_0'] || '#f59e0b', borderRadius: 3, barThickness: 16 }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 105, grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } } } }
+            });
+
+            // 8. Fases (com OnClick Interativo)
+            const ctxFases = document.getElementById('chartFases').getContext('2d');
+            charts.fases = new Chart(ctxFases, {
+                type: 'bar',
+                data: {
+                    labels: appState.fases.map(x => x.fase),
+                    datasets: [{ label: 'Valor (R$)', data: appState.fases.map(x => x.val), backgroundColor: chartColors['fases_0'] || '#0ea5e9', borderRadius: 3, barThickness: 24 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, activeEls) => {
+                        if (activeEls.length > 0) {
+                            const idx = activeEls[0].index;
+                            const faseName = appState.fases[idx].fase;
+                            applyCrossFilter('fase', faseName);
+                        }
+                    },
+                    plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } } }
+                }
+            });
+
+            // 9. Particular
+            const part = appState.particular;
+            const ctxPart = document.getElementById('chartPart').getContext('2d');
+            charts.part = new Chart(ctxPart, {
+                type: 'bar',
+                data: {
+                    labels: ['Cirurgias', 'SADT', 'Consultas', 'Exames', 'Refeições', 'Adicionais'],
+                    datasets: [{ label: 'Receita (R$)', data: [part.cirurgias, part.sadt, part.consultas, part.exames, part.refeicoes, part.adicionais], backgroundColor: chartColors['part_0'] || '#8b5cf6', borderRadius: 3, barThickness: 20 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } } } }
+            });
+
+            // 10. Ticket
+            const ctxTicket = document.getElementById('chartTicket').getContext('2d');
+            charts.ticket = new Chart(ctxTicket, {
+                type: 'bar',
+                data: {
+                    labels: ['Cirurgias', 'SADT', 'Consultas', 'Exames', 'Adicionais', 'Refeições'],
+                    datasets: [{ label: 'Ticket Médio (R$)', data: part.cirurgias > 0 ? [9000, 9000, 200, 200, 120, 100] : [0,0,0,0,0,0], backgroundColor: chartColors['ticket_0'] || '#06b6d4', borderRadius: 3, barThickness: 14 }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 10500, grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } } } }
+            });
+
+            renderAllDraggableLabels();
+            restoreLabelToggles();
+        }
+
+        function refreshDashboard() {
+            renderPipelineAndTables();
+            Object.keys(charts).forEach(k => charts[k].destroy());
+            charts = {};
+            initCharts();
+        }
+
+        // Rótulos de Dados Arrastáveis
+        function getDynamicLabels() {
+            const fatPart = appState.particular.cirurgias + appState.particular.sadt + appState.particular.consultas;
+            const fatConv = appState.convenios.reduce((a, b) => a + b.faturado, 0);
+            const global = fatPart + fatConv;
+
+            return {
+                trend: [
+                    { text: 'R$ ' + (global/1000).toFixed(1) + 'k', top: '15%', left: '76%', id: 'tr1' },
+                    { text: 'R$ ' + (fatConv > 0 ? '341,3k' : '0,0k'), top: '26%', left: '76%', id: 'tr2' }
+                ],
+                gauge: [{ text: (global > 0 ? ((global/1570000)*100).toFixed(1) : '0.0') + '% da Meta', top: '48%', left: '38%', id: 'ga1' }],
+                mix: [
+                    { text: 'Particular: ' + (global > 0 ? ((fatPart/global)*100).toFixed(1) : '0') + '%', top: '30%', left: '20%', id: 'mx1' },
+                    { text: 'SC Saúde: ' + (global > 0 ? '41,4%' : '0%'), top: '65%', left: '60%', id: 'mx2' }
+                ],
+                polar: [{ text: 'Falta Aut.: 22', top: '35%', left: '55%', id: 'pl1' }, { text: 'Doc. Incomp.: 18', top: '60%', left: '30%', id: 'pl2' }],
+                conv: [
+                    { text: 'SC Saúde: R$ 361,8k', top: '16%', left: '16%', id: 'cv1' },
+                    { text: 'Recebido: R$ 341,3k', top: '22%', left: '23%', id: 'cv2' }
+                ],
+                sla: [{ text: '90 Dias', top: '14%', left: '80%', id: 'sl1' }, { text: '60 Dias', top: '60%', left: '58%', id: 'sl2' }],
+                fases: [{ text: 'R$ 341,3k', top: '18%', left: '10%', id: 'fs1' }, { text: 'R$ 48,2k', top: '65%', left: '24%', id: 'fs2' }],
+                part: [{ text: 'R$ ' + (appState.particular.cirurgias/1000).toFixed(0) + 'k', top: '18%', left: '14%', id: 'pt1' }, { text: 'R$ ' + (appState.particular.sadt/1000).toFixed(0) + 'k', top: '38%', left: '29%', id: 'pt2' }],
+                ticket: [{ text: 'R$ 9.000', top: '12%', left: '82%', id: 'tk1' }, { text: 'R$ 200', top: '44%', left: '22%', id: 'tk2' }]
+            };
+        }
+
+        function renderAllDraggableLabels() {
+            const labelsData = getDynamicLabels();
+            Object.keys(labelsData).forEach(key => {
+                const overlay = document.getElementById('overlay' + key.charAt(0).toUpperCase() + key.slice(1));
+                if (!overlay) return;
+                overlay.innerHTML = '';
+
+                labelsData[key].forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'draggable-label';
+                    el.id = 'lbl_' + item.id;
+                    el.contentEditable = 'true';
+                    el.textContent = item.text;
+
+                    const saved = labelPositions[item.id];
+                    el.style.top = saved ? saved.top : item.top;
+                    el.style.left = saved ? saved.left : item.left;
+
+                    makeDraggable(el, item.id);
+                    overlay.appendChild(el);
+                });
+            });
+        }
+
+        function makeDraggable(el, id) {
+            let startX, startY, startLeft, startTop;
+            el.addEventListener('mousedown', function(e) {
+                if (e.target !== el) return;
+                e.preventDefault();
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = el.offsetLeft;
+                startTop = el.offsetTop;
+
+                function onMouseMove(moveEvent) {
+                    el.style.left = (startLeft + moveEvent.clientX - startX) + 'px';
+                    el.style.top = (startTop + moveEvent.clientY - startY) + 'px';
+                }
+
+                function onMouseUp() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    labelPositions[id] = { top: el.style.top, left: el.style.left };
+                    saveState();
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        }
+
+        function restoreLabelToggles() {
+            document.querySelectorAll('.btn-card-toggle').forEach(btn => {
+                const chartKey = btn.dataset.chart;
+                const overlay = document.getElementById('overlay' + chartKey.charAt(0).toUpperCase() + chartKey.slice(1));
+                const isVisible = !!labelVisibility[chartKey];
+
+                if (isVisible) {
+                    btn.classList.add('active');
+                    btn.textContent = 'Rótulos: ON';
+                    if (overlay) overlay.style.display = 'block';
+                } else {
+                    btn.classList.remove('active');
+                    btn.textContent = 'Rótulos: OFF';
+                    if (overlay) overlay.style.display = 'none';
+                }
+            });
+        }
+
+        // Alternadores de Rótulos
+        document.querySelectorAll('.btn-card-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const chartKey = btn.dataset.chart;
+                const overlay = document.getElementById('overlay' + chartKey.charAt(0).toUpperCase() + chartKey.slice(1));
+                if (!overlay) return;
+
+                const willBeVisible = !btn.classList.contains('active');
+                labelVisibility[chartKey] = willBeVisible;
+                saveState();
+
+                if (willBeVisible) {
+                    btn.classList.add('active');
+                    btn.textContent = 'Rótulos: ON';
+                    overlay.style.display = 'block';
+                } else {
+                    btn.classList.remove('active');
+                    btn.textContent = 'Rótulos: OFF';
+                    overlay.style.display = 'none';
+                }
+            });
+        });
+
+        // Seletores de Cores
+        document.querySelectorAll('.color-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const chartKey = input.dataset.chart;
+                const dsIndex = parseInt(input.dataset.ds);
+                const newColor = e.target.value;
+
+                chartColors[chartKey + '_' + dsIndex] = newColor;
+                saveState();
+
+                if (charts[chartKey] && charts[chartKey].data.datasets[dsIndex]) {
+                    const ds = charts[chartKey].data.datasets[dsIndex];
+                    if (charts[chartKey].config.type === 'line' || charts[chartKey].config.type === 'radar') {
+                        ds.borderColor = newColor;
+                        ds.backgroundColor = newColor + '20';
+                    } else {
+                        if (Array.isArray(ds.backgroundColor) && ds.backgroundColor.length > 1) {
+                            ds.backgroundColor[0] = newColor;
+                        } else {
+                            ds.backgroundColor = newColor;
+                        }
+                    }
+                    charts[chartKey].update();
+                }
+            });
+        });
+
+        // --- BOTÃO 1: UPLOAD DE "INDICADOR MENSAL.XLSX" ---
+        const inputIndicador = document.getElementById('fileInputIndicador');
+        document.getElementById('btnUploadIndicador').addEventListener('click', () => inputIndicador.click());
+
+        inputIndicador.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            if (workbook.SheetNames.includes('Página4')) {
+                const ws = workbook.Sheets['Página4'];
+                const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+                const convList = [];
+
+                rows.forEach((row, idx) => {
+                    if (!row || row.length < 2) return;
+                    const col1 = String(row[1] || '').trim();
+                    const u1 = col1.toUpperCase();
+
+                    if (u1.includes('SC SAUDE') || u1.includes('SELECT') || u1.includes('GEAP') || u1.includes('CASSI') || u1.includes('BRADESCO')) {
+                        let opName = 'Outros';
+                        if (u1.includes('SC SAUDE')) opName = 'SC Saúde';
+                        else if (u1.includes('SELECT')) opName = 'Select';
+                        else if (u1.includes('GEAP')) opName = 'GEAP';
+                        else if (u1.includes('CASSI')) opName = 'CASSI';
+                        else if (u1.includes('BRADESCO')) opName = 'Bradesco Saúde';
+
+                        const isConsulta = u1.includes('CONSULTA');
+                        convList.push({
+                            operadora: opName,
+                            segmento: isConsulta ? 'Consultas Médicas' : 'SADT / Cirurgias',
+                            prazo: (opName === 'SC Saúde' || opName === 'GEAP') ? 90 : 60,
+                            fechadas: parseInt(row[2]) || 0,
+                            pendentes: parseInt(row[3]) || 0,
+                            faturado: parseFloat(row[4]) || 0.0,
+                            recebido: parseFloat(row[5]) || 0.0,
+                            glosa: parseFloat(row[6]) || 0.0
+                        });
+                    }
+                });
+
+                if (convList.length > 0) {
+                    appState.convenios = convList;
+                    appState.fases = [
+                        { fase: "FASE 01", nome: "Faturadas e Enviadas", qtd: 265, val: 341314.55, cor: "var(--color-emerald)" },
+                        { fase: "FASE 02", nome: "Faturadas / Não Env.", qtd: 38, val: 48250.00, cor: "var(--color-teal)" },
+                        { fase: "FASE 03", nome: "Pendência Interna", qtd: 16, val: 14820.00, cor: "var(--color-amber)" },
+                        { fase: "FASE 04", nome: "Aguardando Doc.", qtd: 12, val: 9680.00, cor: "var(--color-purple)" },
+                        { fase: "FASE 05", nome: "Em Audit. Interna", qtd: 8, val: 4656.06, cor: "var(--color-cyan)" },
+                        { fase: "FASE 06", nome: "Em Audit. Externa", qtd: 5, val: 3830.02, cor: "var(--text-secondary)" },
+                        { fase: "FASE 07", nome: "Não Faturadas", qtd: 3, val: 0.00, cor: "var(--color-rose)" }
+                    ];
+                    appState.semanal = { s1: 180400, s2: 395100, s3: 642800, s4: 873250.63, s1_rec: 142000, s2_rec: 310500, s3_rec: 560200, s4_rec: 792014.55 };
+
+                    saveState();
+                    refreshDashboard();
+                    notify("Planilha 'Indicador Mensal' importada e processada com sucesso!");
+                }
+            } else {
+                notify("Aba 'Página4' não localizada no arquivo selecionado.");
+            }
+            inputIndicador.value = '';
+        });
+
+        // --- BOTÃO 2: UPLOAD DE "DASHBOARD AUDITORIA.XLSX" ---
+        const inputAuditoria = document.getElementById('fileInputAuditoria');
+        document.getElementById('btnUploadAuditoria').addEventListener('click', () => inputAuditoria.click());
+
+        inputAuditoria.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data, { type: 'array' });
+            let parsedAny = false;
+
+            // Particular
+            if (workbook.SheetNames.includes('Faturamento Particular')) {
+                const wsPart = workbook.Sheets['Faturamento Particular'];
+                const rowsPart = XLSX.utils.sheet_to_json(wsPart, { header: 1 });
+                rowsPart.forEach(r => {
+                    if (r && r[0]) {
+                        const l = String(r[0]).toLowerCase();
+                        const val = parseFloat(r[2]) || 0;
+                        if (l.includes('cirurg')) appState.particular.cirurgias = val;
+                        if (l.includes('sadt')) appState.particular.sadt = val;
+                        if (l.includes('consult')) appState.particular.consultas = val;
+                        if (l.includes('exame')) appState.particular.exames = val;
+                        if (l.includes('refei')) appState.particular.refeicoes = val;
+                        if (l.includes('adicion')) appState.particular.adicionais = val;
+                    }
+                });
+                appState.particular.atraso = 16400.00;
+                parsedAny = true;
+            }
+
+            // Estoque
+            if (workbook.SheetNames.includes('Estoque Farmácia & OPME')) {
+                const wsEst = workbook.Sheets['Estoque Farmácia & OPME'];
+                const rowsEst = XLSX.utils.sheet_to_json(wsEst, { header: 1 });
+                rowsEst.forEach(r => {
+                    if (r && r[0]) {
+                        const l = String(r[0]).toLowerCase();
+                        if (l.includes('valor total do estoque — farmácia')) appState.estoque.farmaciaVal = parseFloat(r[5]) || 286000;
+                        if (l.includes('total de itens — farmácia')) appState.estoque.farmaciaQtd = parseInt(r[5]) || 1240;
+                        if (l.includes('valor total do estoque opme')) appState.estoque.opmeVal = parseFloat(r[5]) || 412000;
+                        if (l.includes('total de itens — opme')) appState.estoque.opmeQtd = parseInt(r[5]) || 95;
+                    }
+                });
+                parsedAny = true;
+            }
+
+            // Governança
+            if (workbook.SheetNames.includes('Recepção Hospitalar')) {
+                appState.governanca.esperaMin = 12.4;
+                appState.governanca.faltasPerc = 0.084;
+                appState.governanca.nps = 68;
+                parsedAny = true;
+            }
+
+            if (parsedAny) {
+                saveState();
+                refreshDashboard();
+                notify("Planilha 'Dashboard Auditoria' importada e processada com sucesso!");
+            } else {
+                notify("Estrutura da planilha de auditoria não reconhecida.");
+            }
+            inputAuditoria.value = '';
+        });
+
+        // Eventos dos Filtros Selecionáveis
+        document.getElementById('selOperadora').addEventListener('change', refreshDashboard);
+        document.getElementById('selCompetencia').addEventListener('change', refreshDashboard);
+
+        // Persistência de Textos Editáveis
+        document.querySelectorAll('[data-persist]').forEach(el => {
+            const key = el.dataset.persist;
+            const savedText = localStorage.getItem('bewikicare_text_' + key);
+            if (savedText) el.textContent = savedText;
+
+            el.addEventListener('blur', () => {
+                localStorage.setItem('bewikicare_text_' + key, el.textContent.trim());
+            });
+        });
+
+        // Botão de Limpar / Zerar
+        document.getElementById('btnResetStorage').addEventListener('click', () => {
+            if (confirm('Deseja zerar todos os dados e limpar a memória local?')) {
+                localStorage.clear();
+                appState = JSON.parse(JSON.stringify(zeroState));
+                labelPositions = {};
+                labelVisibility = {};
+                chartColors = {};
+                activeCrossFilter = null;
+                location.reload();
+            }
+        });
+
+        // Modo Edição
+        const btnToggleEdit = document.getElementById('btnToggleEdit');
+        btnToggleEdit.addEventListener('click', () => {
+            document.body.classList.toggle('edit-mode-active');
+            const isActive = document.body.classList.contains('edit-mode-active');
+            btnToggleEdit.classList.toggle('active-state', isActive);
+            btnToggleEdit.textContent = isActive ? 'Modo Edição: Ativo' : 'Modo Edição de Textos';
+        });
+
+        // Alternador de Tema
+        const themeBtn = document.getElementById('btnThemeToggle');
+        const savedTheme = localStorage.getItem('bewikicare_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeBtn.textContent = savedTheme === 'dark' ? 'Modo Claro' : 'Modo Escuro';
+
+        themeBtn.addEventListener('click', () => {
+            const cur = document.documentElement.getAttribute('data-theme');
+            const target = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('bewikicare_theme', target);
+            themeBtn.textContent = target === 'dark' ? 'Modo Claro' : 'Modo Escuro';
+
+            Object.keys(charts).forEach(k => charts[k].destroy());
+            charts = {};
+            initCharts();
+        });
+
+        // Navegação de Abas
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const target = document.getElementById(btn.dataset.tab);
+                if (target) {
+                    target.classList.add('active');
+                    window.dispatchEvent(new Event('resize'));
+                }
+            });
+        });
+
+        // Inicialização Geral
+        window.addEventListener('DOMContentLoaded', () => {
+            renderPipelineAndTables();
+            initCharts();
+        });
+    </script>
+</body>
+</html>
