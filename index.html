@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bewikicare | Dashboard Executivo de Auditoria e Faturamento</title>
+    <title>Bewikicare | Dashboard Executivo de Auditoria, Faturamento & NPS</title>
     
-    <!-- Chart.js 4.4 Engine & DataLabels Plugin -->
+    <!-- Chart.js 4.4 Engine -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <!-- SheetJS (xlsx) for Native Spreadsheet Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
@@ -168,7 +167,7 @@
             background: var(--bg-surface);
             border: 1px solid var(--border);
             color: var(--text-primary);
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 4px;
             font-size: 10px;
             font-weight: 700;
@@ -198,6 +197,12 @@
             color: var(--color-purple);
         }
 
+        .btn-header.btn-upload-3 {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--color-emerald);
+            color: var(--color-emerald);
+        }
+
         .btn-header.active-state {
             background: var(--color-teal);
             color: #ffffff;
@@ -208,7 +213,7 @@
             display: none;
         }
 
-        /* Toolbar & Cross-Filter Bar */
+        /* Toolbar & Navegação */
         .toolbar {
             display: flex;
             justify-content: space-between;
@@ -225,16 +230,17 @@
         .nav-tabs {
             display: flex;
             gap: 4px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
             background: transparent;
             border: 1px solid transparent;
             color: var(--text-secondary);
-            padding: 7px 14px;
+            padding: 7px 12px;
             border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 10px;
+            font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
             cursor: pointer;
@@ -276,39 +282,6 @@
             font-size: 11px;
             font-weight: 600;
             outline: none;
-            cursor: pointer;
-        }
-
-        /* Active Cross-Filter Indicator Ribbon */
-        .active-filter-bar {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid var(--color-teal);
-            border-radius: 5px;
-            padding: 8px 16px;
-            font-size: 11px;
-            color: var(--text-primary);
-        }
-
-        .active-filter-tag {
-            font-weight: 700;
-            color: var(--color-teal);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .btn-clear-filter {
-            background: var(--color-teal);
-            color: #ffffff;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
             cursor: pointer;
         }
 
@@ -399,6 +372,12 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 16px;
+        }
+
+        .grid-4col {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
         }
 
         /* Card Container */
@@ -526,7 +505,7 @@
             font-size: 10px;
             font-weight: 700;
             color: #ffffff;
-            background: rgba(15, 23, 42, 0.92);
+            background: rgba(15, 23, 42, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
@@ -535,7 +514,7 @@
         }
 
         [data-theme="light"] .draggable-label {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.92);
             color: #0f172a;
             border: 1px solid rgba(0, 0, 0, 0.15);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -564,13 +543,6 @@
             flex-direction: column;
             gap: 4px;
             position: relative;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .pipeline-box:hover {
-            border-color: var(--color-teal);
-            background: var(--bg-card-hover);
         }
 
         .pipeline-box::before {
@@ -603,7 +575,7 @@
             border-bottom: 1px solid var(--border);
         }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
-        tr:hover td { background: var(--bg-card-hover); cursor: pointer; }
+        tr:hover td { background: var(--bg-card-hover); }
         .t-right { text-align: right; }
         .t-center { text-align: center; }
 
@@ -648,7 +620,7 @@
 
         @media (max-width: 1200px) {
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-            .grid-2col, .grid-3col { grid-template-columns: 1fr; }
+            .grid-2col, .grid-3col, .grid-4col { grid-template-columns: 1fr; }
             .pipeline-track { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
@@ -658,9 +630,10 @@
     <!-- Notification Toast -->
     <div class="toast-notify" id="toastBox">Notificação</div>
 
-    <!-- Hidden File Inputs for Independent Uploads -->
+    <!-- Hidden File Inputs -->
     <input type="file" id="fileInputIndicador" accept=".xlsx, .xls, .csv">
     <input type="file" id="fileInputAuditoria" accept=".xlsx, .xls, .csv">
+    <input type="file" id="fileInputNps" accept=".xlsx, .xls, .csv">
 
     <!-- Header Executivo -->
     <header>
@@ -679,8 +652,11 @@
             <button class="btn-header btn-upload-2" id="btnUploadAuditoria">
                 2. Importar 'Dashboard Auditoria' (.xlsx)
             </button>
+            <button class="btn-header btn-upload-3" id="btnUploadNps">
+                3. Importar 'Pesquisa NPS' (.xlsx)
+            </button>
             <button class="btn-header" id="btnToggleEdit">
-                Modo Edição de Textos
+                Modo Edição
             </button>
             <button class="btn-header" id="btnResetStorage">
                 Zerar / Limpar Tudo
@@ -706,6 +682,9 @@
             <button class="tab-btn" data-tab="tab-particular">
                 <span contenteditable="true" data-persist="tab_4">Particular & Cirurgias</span>
             </button>
+            <button class="tab-btn" data-tab="tab-nps">
+                <span contenteditable="true" data-persist="tab_nps">NPS & Experiência do Paciente</span>
+            </button>
             <button class="tab-btn" data-tab="tab-governanca">
                 <span contenteditable="true" data-persist="tab_5">Governança & Estoque</span>
             </button>
@@ -730,15 +709,6 @@
                 </select>
             </div>
         </div>
-    </div>
-
-    <!-- Active Cross-Filter Indicator Bar -->
-    <div class="active-filter-bar" id="crossFilterBar">
-        <div>
-            <span>Filtro Interativo Ativo: </span>
-            <span class="active-filter-tag" id="crossFilterTag">Nenhum</span>
-        </div>
-        <button class="btn-clear-filter" id="btnClearCrossFilter">Limpar Filtros</button>
     </div>
 
     <!-- KPI Ribbon -->
@@ -863,7 +833,7 @@
                 <div class="card-header">
                     <div class="card-title-wrap">
                         <span class="card-title" contenteditable="true" data-persist="c_t_mix">Mix de Origem da Receita</span>
-                        <span class="card-sub" contenteditable="true" data-persist="c_s_mix">Clique nas fatias para filtrar</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_mix">Participação % no Faturamento</span>
                     </div>
                     <div class="card-actions">
                         <button class="btn-card-toggle" data-chart="mix">Rótulos: OFF</button>
@@ -900,7 +870,7 @@
                 <div class="card-header">
                     <div class="card-title-wrap">
                         <span class="card-title" contenteditable="true" data-persist="c_t_conv">Faturamento vs Liquidação por Operadora</span>
-                        <span class="card-sub" contenteditable="true" data-persist="c_s_conv">Clique nas barras para filtrar o Dashboard</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_conv">Valores Comparativos em Reais (R$)</span>
                     </div>
                     <div class="card-actions">
                         <div class="color-picker-box">
@@ -964,7 +934,7 @@
                         </tr>
                     </thead>
                     <tbody id="tbodyConvenios">
-                        <tr><td colspan="9" class="t-center" style="color: var(--text-muted); padding: 20px;">Nenhum dado importado. Clique em "1. Importar Indicador Mensal (.xlsx)" no topo.</td></tr>
+                        <tr><td colspan="9" class="t-center" style="color: var(--text-muted); padding: 20px;">Nenhum dado importado. Clique em "1. Importar Indicador Mensal (.xlsx)" no cabeçalho.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -977,7 +947,7 @@
             <div class="card-header">
                 <div class="card-title-wrap">
                     <span class="card-title" contenteditable="true" data-persist="c_t_esteira">Esteira de Faturamento Hospitalar (7 Fases)</span>
-                    <span class="card-sub" contenteditable="true" data-persist="c_s_esteira">Controle de Volumetria e Posição Financeira (Clique em uma fase para filtrar)</span>
+                    <span class="card-sub" contenteditable="true" data-persist="c_s_esteira">Controle de Volumetria e Posição Financeira</span>
                 </div>
             </div>
 
@@ -1052,7 +1022,143 @@
         </div>
     </div>
 
-    <!-- TAB 5: GOVERNANÇA & ESTOQUE -->
+    <!-- TAB 5: NPS & EXPERIÊNCIA DO PACIENTE (NOVA ABA DEDICADA) -->
+    <div class="tab-pane" id="tab-nps">
+        <div class="grid-4col">
+            <div class="kpi-card" style="--kpi-accent: var(--color-emerald);">
+                <div class="kpi-header">
+                    <span class="kpi-title" contenteditable="true" data-persist="nps_kpi_1">Score NPS Global</span>
+                    <span class="kpi-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--color-emerald);" id="badgeZoneNps">Zona de Excelência</span>
+                </div>
+                <div class="kpi-val" id="valNpsScore">+74</div>
+                <div class="kpi-footer">
+                    <span>Meta Diretoria: ≥ +70</span>
+                    <span id="txtTotalRespostasNps">120 Respostas</span>
+                </div>
+            </div>
+
+            <div class="kpi-card" style="--kpi-accent: var(--color-emerald);">
+                <div class="kpi-header">
+                    <span class="kpi-title" contenteditable="true" data-persist="nps_kpi_2">Promotores (Notas 9–10)</span>
+                    <span class="kpi-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--color-emerald);" id="percPromotores">80.0%</span>
+                </div>
+                <div class="kpi-val" id="qtdPromotores" style="color: var(--color-emerald);">96</div>
+                <div class="kpi-footer">
+                    <span>Clientes Engajados</span>
+                    <span>Pacientes Defensores</span>
+                </div>
+            </div>
+
+            <div class="kpi-card" style="--kpi-accent: var(--color-amber);">
+                <div class="kpi-header">
+                    <span class="kpi-title" contenteditable="true" data-persist="nps_kpi_3">Neutros / Passivos (7–8)</span>
+                    <span class="kpi-badge" style="background: rgba(245, 158, 11, 0.15); color: var(--color-amber);" id="percNeutros">14.2%</span>
+                </div>
+                <div class="kpi-val" id="qtdNeutros" style="color: var(--color-amber);">17</div>
+                <div class="kpi-footer">
+                    <span>Satisfeitos Indiferentes</span>
+                    <span>Potencial Conversão</span>
+                </div>
+            </div>
+
+            <div class="kpi-card" style="--kpi-accent: var(--color-rose);">
+                <div class="kpi-header">
+                    <span class="kpi-title" contenteditable="true" data-persist="nps_kpi_4">Detratores (Notas 0–6)</span>
+                    <span class="kpi-badge" style="background: rgba(244, 63, 94, 0.15); color: var(--color-rose);" id="percDetratores">5.8%</span>
+                </div>
+                <div class="kpi-val" id="qtdDetratores" style="color: var(--color-rose);">7</div>
+                <div class="kpi-footer">
+                    <span>Insatisfeitos / Risco</span>
+                    <span>Foco de Atuação</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-3col">
+            <div class="card" id="cardNpsDist">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_npsdist">Distribuição das Avaliações</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_npsdist">Classificação de Perfil dos Pacientes</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-card-toggle" data-chart="npsDist">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="chartNpsDist"></canvas>
+                    <div class="labels-overlay-layer" id="overlayNpsDist"></div>
+                </div>
+            </div>
+
+            <div class="card" id="cardNpsSetor">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_npssetor">Satisfação NPS por Setor Hospitalar</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_npssetor">Score Médio por Ponto de Contato</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>Cor:</span>
+                            <input type="color" class="color-input" value="#10b981" data-chart="npsSetor" data-ds="0">
+                        </div>
+                        <button class="btn-card-toggle" data-chart="npsSetor">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="chartNpsSetor"></canvas>
+                    <div class="labels-overlay-layer" id="overlayNpsSetor"></div>
+                </div>
+            </div>
+
+            <div class="card" id="cardNpsEvol">
+                <div class="card-header">
+                    <div class="card-title-wrap">
+                        <span class="card-title" contenteditable="true" data-persist="c_t_npsevol">Evolução Mensal do NPS</span>
+                        <span class="card-sub" contenteditable="true" data-persist="c_s_npsevol">Tendência do Índice de Satisfação</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="color-picker-box">
+                            <span>Cor:</span>
+                            <input type="color" class="color-input" value="#0ea5e9" data-chart="npsEvol" data-ds="0">
+                        </div>
+                        <button class="btn-card-toggle" data-chart="npsEvol">Rótulos: OFF</button>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 220px;">
+                    <canvas id="chartNpsEvol"></canvas>
+                    <div class="labels-overlay-layer" id="overlayNpsEvol"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title-wrap">
+                    <span class="card-title" contenteditable="true" data-persist="c_t_npstbl">Registro Analítico de Respostas & Feedbacks da Pesquisa</span>
+                    <span class="card-sub" contenteditable="true" data-persist="c_s_npstbl">Leitura Direta da Aba 'Respostas'</span>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Setor / Unidade</th>
+                            <th class="t-center">Nota (0–10)</th>
+                            <th class="t-center">Classificação</th>
+                            <th>Comentário / Motivo Registrado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyNpsRespostas">
+                        <tr><td colspan="5" class="t-center" style="color: var(--text-muted); padding: 20px;">Nenhum dado importado. Clique em '3. Importar Pesquisa NPS (.xlsx)' no cabeçalho.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: GOVERNANÇA & ESTOQUE -->
     <div class="tab-pane" id="tab-governanca">
         <div class="grid-2col">
             <div class="card">
@@ -1124,7 +1230,7 @@
                                 <td class="t-center"><span class="kpi-badge" style="background: rgba(100,116,139,0.15); color: var(--text-muted);" id="badgeFaltas">Aguardando</span></td>
                             </tr>
                             <tr>
-                                <td>NPS de Satisfação</td>
+                                <td>NPS de Satisfação (Geral)</td>
                                 <td class="t-center">≥ 70</td>
                                 <td class="t-center" id="govNps">0</td>
                                 <td class="t-center"><span class="kpi-badge" style="background: rgba(100,116,139,0.15); color: var(--text-muted);" id="badgeNps">Aguardando</span></td>
@@ -1142,9 +1248,9 @@
         <div contenteditable="true" data-persist="ft_right">Dashboard Executivo Interativo — Padrão 16:9</div>
     </footer>
 
-    <!-- JS Core Engine -->
+    <!-- Motor JavaScript -->
     <script>
-        // Baseline State (Zerado de início)
+        // Estado Totalmente Zerado de Início
         const zeroState = {
             convenios: [],
             fases: [
@@ -1159,15 +1265,22 @@
             particular: { cirurgias: 0, sadt: 0, consultas: 0, exames: 0, refeicoes: 0, adicionais: 0, atraso: 0 },
             estoque: { farmaciaVal: 0, farmaciaQtd: 0, opmeVal: 0, opmeQtd: 0, giroFarm: 0, acuraciaOpme: 0 },
             governanca: { esperaMin: 0, faltasPerc: 0, nps: 0, agendados: 0, executados: 0 },
-            semanal: { s1: 0, s2: 0, s3: 0, s4: 0, s1_rec: 0, s2_rec: 0, s3_rec: 0, s4_rec: 0 }
+            semanal: { s1: 0, s2: 0, s3: 0, s4: 0, s1_rec: 0, s2_rec: 0, s3_rec: 0, s4_rec: 0 },
+            npsData: {
+                score: 0,
+                promotores: 0,
+                neutros: 0,
+                detratores: 0,
+                total: 0,
+                setores: {},
+                feedbacks: []
+            }
         };
 
-        // Active State & Filters
         let appState = JSON.parse(localStorage.getItem('bewikicare_state')) || JSON.parse(JSON.stringify(zeroState));
         let labelPositions = JSON.parse(localStorage.getItem('bewikicare_label_positions')) || {};
         let labelVisibility = JSON.parse(localStorage.getItem('bewikicare_label_visibility')) || {};
         let chartColors = JSON.parse(localStorage.getItem('bewikicare_colors')) || {};
-        let activeCrossFilter = null; // { type: 'operadora'|'segmento'|'fase', value: string }
         let charts = {};
 
         function notify(msg) {
@@ -1198,61 +1311,8 @@
             };
         }
 
-        // Apply Cross Filters & Global Filters
-        function getFilteredConvenios() {
-            let list = [...appState.convenios];
-
-            // Global Select Filter
-            const selOp = document.getElementById('selOperadora').value;
-            if (selOp !== 'ALL') {
-                list = list.filter(x => x.operadora === selOp);
-            }
-
-            // Cross Filter
-            if (activeCrossFilter) {
-                if (activeCrossFilter.type === 'operadora') {
-                    list = list.filter(x => x.operadora === activeCrossFilter.value);
-                } else if (activeCrossFilter.type === 'segmento') {
-                    list = list.filter(x => x.segmento.toLowerCase().includes(activeCrossFilter.value.toLowerCase()));
-                }
-            }
-
-            return list;
-        }
-
-        function applyCrossFilter(type, value) {
-            if (activeCrossFilter && activeCrossFilter.type === type && activeCrossFilter.value === value) {
-                activeCrossFilter = null; // Toggle off if clicked again
-            } else {
-                activeCrossFilter = { type, value };
-            }
-            updateCrossFilterBar();
-            refreshDashboard();
-        }
-
-        function clearCrossFilter() {
-            activeCrossFilter = null;
-            updateCrossFilterBar();
-            refreshDashboard();
-        }
-
-        function updateCrossFilterBar() {
-            const bar = document.getElementById('crossFilterBar');
-            const tag = document.getElementById('crossFilterTag');
-            if (activeCrossFilter) {
-                bar.style.display = 'flex';
-                tag.textContent = activeCrossFilter.type.toUpperCase() + ': ' + activeCrossFilter.value;
-            } else {
-                bar.style.display = 'none';
-            }
-        }
-
-        document.getElementById('btnClearCrossFilter').addEventListener('click', clearCrossFilter);
-
-        // Render Tables & Update Cards
+        // Atualização dos Painéis e Cálculos
         function renderPipelineAndTables() {
-            const filteredConv = getFilteredConvenios();
-
             // Esteira
             const track = document.getElementById('pipelineTrackContainer');
             track.innerHTML = '';
@@ -1260,11 +1320,6 @@
                 const box = document.createElement('div');
                 box.className = 'pipeline-box';
                 box.style.setProperty('--box-accent', f.cor);
-                if (activeCrossFilter && activeCrossFilter.type === 'fase' && activeCrossFilter.value === f.fase) {
-                    box.style.borderColor = 'var(--color-teal)';
-                    box.style.background = 'var(--bg-card-hover)';
-                }
-                box.onclick = () => applyCrossFilter('fase', f.fase);
                 box.innerHTML = `
                     <span class="pipe-tag">${f.fase}</span>
                     <span class="pipe-title">${f.nome}</span>
@@ -1274,15 +1329,15 @@
                 track.appendChild(box);
             });
 
-            // Tabela
+            // Tabela de Convênios
             const tbody = document.getElementById('tbodyConvenios');
             tbody.innerHTML = '';
             let totalFat = 0, totalRec = 0, totalGlo = 0, totalFech = 0, totalPend = 0;
 
-            if (filteredConv.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="t-center" style="color: var(--text-muted); padding: 20px;">Nenhum registro localizado para o filtro selecionado.</td></tr>';
+            if (appState.convenios.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="t-center" style="color: var(--text-muted); padding: 20px;">Nenhum dado importado. Clique em "1. Importar Indicador Mensal (.xlsx)" no cabeçalho.</td></tr>';
             } else {
-                filteredConv.forEach(item => {
+                appState.convenios.forEach(item => {
                     totalFat += item.faturado;
                     totalRec += item.recebido;
                     totalGlo += item.glosa;
@@ -1291,7 +1346,6 @@
                     const percGlo = item.faturado > 0 ? ((item.glosa / item.faturado) * 100).toFixed(2) + '%' : '0,00%';
 
                     const tr = document.createElement('tr');
-                    tr.onclick = () => applyCrossFilter('operadora', item.operadora);
                     tr.innerHTML = `
                         <td><strong>${item.operadora}</strong></td>
                         <td>${item.segmento}</td>
@@ -1307,16 +1361,9 @@
                 });
             }
 
-            // Particular Calculations
+            // Particular
             const part = appState.particular;
-            let totalPart = part.cirurgias + part.sadt + part.consultas + part.exames + part.refeicoes + part.adicionais;
-
-            if (activeCrossFilter && activeCrossFilter.type === 'segmento') {
-                if (activeCrossFilter.value.toLowerCase().includes('consult')) totalPart = part.consultas;
-                else if (activeCrossFilter.value.toLowerCase().includes('cirurg')) totalPart = part.cirurgias;
-                else if (activeCrossFilter.value.toLowerCase().includes('sadt')) totalPart = part.sadt;
-            }
-
+            const totalPart = part.cirurgias + part.sadt + part.consultas + part.exames + part.refeicoes + part.adicionais;
             const fatGlobal = totalFat + totalPart;
             const recGlobal = totalRec + (totalPart > 0 ? (totalPart - part.atraso) : 0);
             const gloGlobal = totalGlo;
@@ -1330,6 +1377,8 @@
 
             document.getElementById('kpiFatConvSub').textContent = 'Convênios: R$ ' + totalFat.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('kpiFatPartSub').textContent = 'Particular: R$ ' + totalPart.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpiPendConvSub').textContent = 'Convênios: R$ ' + (totalFat - totalRec).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('kpiPendPartSub').textContent = 'Part. Atraso: R$ ' + part.atraso.toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
             const taxaLiq = fatGlobal > 0 ? ((recGlobal / fatGlobal) * 100).toFixed(1) : '0.0';
             document.getElementById('kpiTaxaLiq').textContent = taxaLiq + '% Liq.';
@@ -1339,30 +1388,76 @@
             document.getElementById('kpiPercGlosa').textContent = percGlosa + '% Total';
             document.getElementById('kpiGlosaStatus').textContent = totalFat > 0 ? (percGlosa <= 5.0 ? 'Dentro da Meta' : 'Atenção') : 'Sem Glosas';
 
-            // Estoque & Governança
+            // Estoque & Governança Tables
             const est = appState.estoque;
             document.getElementById('cardSubEstoque').textContent = 'R$ ' + (est.farmaciaVal + est.opmeVal).toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' em Ativos';
             document.getElementById('estQtdFarm').textContent = est.farmaciaQtd.toLocaleString('pt-BR');
             document.getElementById('estValFarm').textContent = 'R$ ' + est.farmaciaVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('estGiroFarm').textContent = (est.giroFarm || 3.4) + ' Giros';
             document.getElementById('estBadgeFarm').textContent = est.farmaciaQtd > 0 ? '6 Críticos' : 'Aguardando';
+            document.getElementById('estBadgeFarm').style.color = est.farmaciaQtd > 0 ? 'var(--color-rose)' : 'var(--text-muted)';
 
             document.getElementById('estQtdOpme').textContent = est.opmeQtd.toLocaleString('pt-BR');
             document.getElementById('estValOpme').textContent = 'R$ ' + est.opmeVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('estAcuraciaOpme').textContent = (est.acuraciaOpme ? (est.acuraciaOpme * 100).toFixed(1) : '98.6') + '% Acurácia';
             document.getElementById('estBadgeOpme').textContent = est.opmeQtd > 0 ? 'Conforme' : 'Aguardando';
+            document.getElementById('estBadgeOpme').style.color = est.opmeQtd > 0 ? 'var(--color-emerald)' : 'var(--text-muted)';
 
             const gov = appState.governanca;
             document.getElementById('govEsp').textContent = (gov.esperaMin || 0) + ' min';
             document.getElementById('govFaltas').textContent = ((gov.faltasPerc || 0) * 100).toFixed(1) + '%';
-            document.getElementById('govNps').textContent = gov.nps || 0;
-            document.getElementById('cardSubPart').textContent = 'Total R$ ' + totalPart.toLocaleString('pt-BR', {minimumFractionDigits: 2}) + ' (741 Atendimentos)';
+            document.getElementById('govNps').textContent = appState.npsData.score > 0 ? appState.npsData.score : (gov.nps || 0);
+
+            // NPS Tab Rendering
+            renderNpsTab();
         }
 
-        // Instanciação e Atualização dos 10 Gráficos
+        function renderNpsTab() {
+            const nps = appState.npsData;
+            const valScore = document.getElementById('valNpsScore');
+            const badgeZone = document.getElementById('badgeZoneNps');
+            
+            if (nps.total > 0) {
+                valScore.textContent = (nps.score >= 0 ? '+' : '') + nps.score;
+                if (nps.score >= 75) { badgeZone.textContent = 'Zona de Excelência'; badgeZone.style.color = 'var(--color-emerald)'; }
+                else if (nps.score >= 50) { badgeZone.textContent = 'Zona de Qualidade'; badgeZone.style.color = 'var(--color-teal)'; }
+                else if (nps.score >= 0) { badgeZone.textContent = 'Zona de Aperfeiçoamento'; badgeZone.style.color = 'var(--color-amber)'; }
+                else { badgeZone.textContent = 'Zona Crítica'; badgeZone.style.color = 'var(--color-rose)'; }
+
+                document.getElementById('txtTotalRespostasNps').textContent = nps.total + ' Respostas Avaliadas';
+                document.getElementById('qtdPromotores').textContent = nps.promotores;
+                document.getElementById('percPromotores').textContent = ((nps.promotores / nps.total) * 100).toFixed(1) + '%';
+                
+                document.getElementById('qtdNeutros').textContent = nps.neutros;
+                document.getElementById('percNeutros').textContent = ((nps.neutros / nps.total) * 100).toFixed(1) + '%';
+                
+                document.getElementById('qtdDetratores').textContent = nps.detratores;
+                document.getElementById('percDetratores').textContent = ((nps.detratores / nps.total) * 100).toFixed(1) + '%';
+
+                // Tabela de Respostas
+                const tbodyNps = document.getElementById('tbodyNpsRespostas');
+                tbodyNps.innerHTML = '';
+                nps.feedbacks.slice(0, 50).forEach(f => {
+                    const tr = document.createElement('tr');
+                    let colorPill = 'var(--color-emerald)';
+                    if (f.categoria === 'Neutro') colorPill = 'var(--color-amber)';
+                    if (f.categoria === 'Detrator') colorPill = 'var(--color-rose)';
+
+                    tr.innerHTML = `
+                        <td>${f.data}</td>
+                        <td><strong>${f.setor}</strong></td>
+                        <td class="t-center"><span class="stat-pill" style="border-color:${colorPill}; color:${colorPill};">${f.nota}</span></td>
+                        <td class="t-center"><span class="stat-pill" style="border-color:${colorPill}; color:${colorPill};">${f.categoria}</span></td>
+                        <td>${f.comentario}</td>
+                    `;
+                    tbodyNps.appendChild(tr);
+                });
+            }
+        }
+
+        // Inicialização de Gráficos
         function initCharts() {
             const c = getThemeConfig();
-            const filteredConv = getFilteredConvenios();
 
             // 1. Trend Line
             const ctxTrend = document.getElementById('chartTrend').getContext('2d');
@@ -1371,68 +1466,113 @@
                 data: {
                     labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
                     datasets: [
-                        { label: 'Faturamento Bruto', data: [appState.semanal.s1, appState.semanal.s2, appState.semanal.s3, appState.semanal.s4], borderColor: chartColors['trend_0'] || '#0ea5e9', backgroundColor: (chartColors['trend_0'] || '#0ea5e9') + '20', fill: true, tension: 0.35, borderWidth: 2.5 },
-                        { label: 'Montante Liquidado', data: [appState.semanal.s1_rec, appState.semanal.s2_rec, appState.semanal.s3_rec, appState.semanal.s4_rec], borderColor: chartColors['trend_1'] || '#10b981', backgroundColor: (chartColors['trend_1'] || '#10b981') + '20', fill: true, tension: 0.35, borderWidth: 2.5 }
+                        {
+                            label: 'Faturamento Bruto',
+                            data: [appState.semanal.s1, appState.semanal.s2, appState.semanal.s3, appState.semanal.s4],
+                            borderColor: chartColors['trend_0'] || '#0ea5e9',
+                            backgroundColor: (chartColors['trend_0'] || '#0ea5e9') + '20',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5
+                        },
+                        {
+                            label: 'Montante Liquidado',
+                            data: [appState.semanal.s1_rec, appState.semanal.s2_rec, appState.semanal.s3_rec, appState.semanal.s4_rec],
+                            borderColor: chartColors['trend_1'] || '#10b981',
+                            backgroundColor: (chartColors['trend_1'] || '#10b981') + '20',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5
+                        }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { position: 'top', labels: { color: c.text, font: { size: 10 } } } },
-                    scales: { x: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 10 } } }, y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } } }
+                    scales: {
+                        x: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 10 } } },
+                        y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } }
+                    }
                 }
             });
 
             // 2. Radar
+            const gov = appState.governanca;
             const ctxRadar = document.getElementById('chartRadar').getContext('2d');
             charts.radar = new Chart(ctxRadar, {
                 type: 'radar',
                 data: {
                     labels: ['Autorização', 'Ocupação', 'NPS Recepção', 'Acurácia Estoque', 'Contas no Prazo', 'Liquidez'],
-                    datasets: [{ label: 'Desempenho Real', data: appState.governanca.nps > 0 ? [87.5, 86.7, 97.1, 98.6, 94.0, 90.7] : [0,0,0,0,0,0], borderColor: chartColors['radar_0'] || '#06b6d4', backgroundColor: (chartColors['radar_0'] || '#06b6d4') + '30', borderWidth: 2 }]
+                    datasets: [{
+                        label: 'Desempenho Real',
+                        data: gov.nps > 0 || appState.npsData.score > 0 ? [87.5, 86.7, appState.npsData.score || 97.1, 98.6, 94.0, 90.7] : [0, 0, 0, 0, 0, 0],
+                        borderColor: chartColors['radar_0'] || '#06b6d4',
+                        backgroundColor: (chartColors['radar_0'] || '#06b6d4') + '30',
+                        borderWidth: 2
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { angleLines: { color: c.grid }, grid: { color: c.grid }, pointLabels: { color: c.text, font: { size: 9, weight: 600 } }, ticks: { display: false, min: 0, max: 100 } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        r: {
+                            angleLines: { color: c.grid },
+                            grid: { color: c.grid },
+                            pointLabels: { color: c.text, font: { size: 9, weight: 600 } },
+                            ticks: { display: false, min: 0, max: 100 }
+                        }
+                    }
+                }
             });
 
             // 3. Gauge Meta
             const partTotal = Object.values(appState.particular).reduce((a, b) => a + b, 0) - appState.particular.atraso;
-            const convTotal = filteredConv.reduce((a, b) => a + b.faturado, 0);
+            const convTotal = appState.convenios.reduce((a, b) => a + b.faturado, 0);
             const globalFat = partTotal + convTotal;
+            const restante = Math.max(0, 1570000 - globalFat);
 
             const ctxGauge = document.getElementById('chartGauge').getContext('2d');
             charts.gauge = new Chart(ctxGauge, {
                 type: 'doughnut',
                 data: {
                     labels: ['Faturado', 'Restante'],
-                    datasets: [{ data: [globalFat, Math.max(0, 1570000 - globalFat)], backgroundColor: [chartColors['gauge_0'] || '#0ea5e9', c.grid], circumference: 180, rotation: 270, borderWidth: 0 }]
+                    datasets: [{
+                        data: [globalFat, restante],
+                        backgroundColor: [chartColors['gauge_0'] || '#0ea5e9', c.grid],
+                        circumference: 180,
+                        rotation: 270,
+                        borderWidth: 0
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '76%' }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: '76%'
+                }
             });
 
-            // 4. Mix (com OnClick Interativo)
-            const scFat = filteredConv.filter(x => x.operadora === 'SC Saúde').reduce((a,b)=>a+b.faturado, 0);
-            const selFat = filteredConv.filter(x => x.operadora === 'Select').reduce((a,b)=>a+b.faturado, 0);
-            const outFat = filteredConv.filter(x => x.operadora !== 'SC Saúde' && x.operadora !== 'Select').reduce((a,b)=>a+b.faturado, 0);
+            // 4. Mix
+            const scFat = appState.convenios.filter(x => x.operadora === 'SC Saúde').reduce((a,b)=>a+b.faturado, 0);
+            const selFat = appState.convenios.filter(x => x.operadora === 'Select').reduce((a,b)=>a+b.faturado, 0);
+            const outFat = appState.convenios.filter(x => x.operadora !== 'SC Saúde' && x.operadora !== 'Select').reduce((a,b)=>a+b.faturado, 0);
 
             const ctxMix = document.getElementById('chartMix').getContext('2d');
             charts.mix = new Chart(ctxMix, {
                 type: 'doughnut',
                 data: {
                     labels: ['Particular', 'SC Saúde', 'Select', 'Demais Conv.'],
-                    datasets: [{ data: globalFat > 0 ? [partTotal, scFat, selFat, outFat] : [0,0,0,0], backgroundColor: ['#8b5cf6', '#0ea5e9', '#06b6d4', '#3b82f6'], borderWidth: 0 }]
+                    datasets: [{
+                        data: globalFat > 0 ? [partTotal, scFat, selFat, outFat] : [0, 0, 0, 0],
+                        backgroundColor: ['#8b5cf6', '#0ea5e9', '#06b6d4', '#3b82f6'],
+                        borderWidth: 0
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    onClick: (evt, activeEls) => {
-                        if (activeEls.length > 0) {
-                            const idx = activeEls[0].index;
-                            const label = charts.mix.data.labels[idx];
-                            if (label === 'Particular') applyCrossFilter('segmento', 'Particular');
-                            else if (label === 'SC Saúde') applyCrossFilter('operadora', 'SC Saúde');
-                            else if (label === 'Select') applyCrossFilter('operadora', 'Select');
-                        }
-                    },
                     plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { size: 9 } } } },
                     cutout: '65%'
                 }
@@ -1444,15 +1584,24 @@
                 type: 'polarArea',
                 data: {
                     labels: ['Falta Autorização', 'Doc. Incompleta', 'Codificação', 'Carência'],
-                    datasets: [{ data: convTotal > 0 ? [22, 18, 11, 3] : [0,0,0,0], backgroundColor: ['#f43f5e', '#f59e0b', '#8b5cf6', '#0ea5e9'], borderWidth: 0 }]
+                    datasets: [{
+                        data: convTotal > 0 ? [22, 18, 11, 3] : [0, 0, 0, 0],
+                        backgroundColor: ['#f43f5e', '#f59e0b', '#8b5cf6', '#0ea5e9'],
+                        borderWidth: 0
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { size: 8 } } } }, scales: { r: { grid: { color: c.grid }, ticks: { display: false } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { size: 8 } } } },
+                    scales: { r: { grid: { color: c.grid }, ticks: { display: false } } }
+                }
             });
 
-            // 6. Convênios (com OnClick Interativo)
-            const convLabels = filteredConv.length > 0 ? [...new Set(filteredConv.map(x => x.operadora))] : ['SC Saúde', 'Select', 'GEAP', 'CASSI'];
-            const convFatData = convLabels.map(op => filteredConv.filter(x => x.operadora === op).reduce((a,b)=>a+b.faturado, 0));
-            const convRecData = convLabels.map(op => filteredConv.filter(x => x.operadora === op).reduce((a,b)=>a+b.recebido, 0));
+            // 6. Convênios
+            const convLabels = appState.convenios.length > 0 ? [...new Set(appState.convenios.map(x => x.operadora))] : ['SC Saúde', 'Select', 'GEAP', 'CASSI'];
+            const convFatData = convLabels.map(op => appState.convenios.filter(x => x.operadora === op).reduce((a,b)=>a+b.faturado, 0));
+            const convRecData = convLabels.map(op => appState.convenios.filter(x => x.operadora === op).reduce((a,b)=>a+b.recebido, 0));
 
             const ctxConv = document.getElementById('chartConv').getContext('2d');
             charts.conv = new Chart(ctxConv, {
@@ -1467,30 +1616,36 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    onClick: (evt, activeEls) => {
-                        if (activeEls.length > 0) {
-                            const idx = activeEls[0].index;
-                            const opName = convLabels[idx];
-                            applyCrossFilter('operadora', opName);
-                        }
-                    },
                     plugins: { legend: { position: 'top', labels: { color: c.text, font: { size: 9 } } } },
-                    scales: { x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } } }
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } },
+                        y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } }
+                    }
                 }
             });
 
             // 7. SLAs
+            const slaData = convLabels.map(op => (op === 'SC Saúde' || op === 'GEAP') ? 90 : 60);
             const ctxSla = document.getElementById('chartSla').getContext('2d');
             charts.sla = new Chart(ctxSla, {
                 type: 'bar',
                 data: {
                     labels: convLabels,
-                    datasets: [{ label: 'SLA Prazo (Dias)', data: convLabels.map(op => (op === 'SC Saúde' || op === 'GEAP') ? 90 : 60), backgroundColor: chartColors['sla_0'] || '#f59e0b', borderRadius: 3, barThickness: 16 }]
+                    datasets: [{ label: 'Prazo Médio (Dias)', data: appState.convenios.length > 0 ? slaData : [0, 0, 0, 0], backgroundColor: chartColors['sla_0'] || '#f59e0b', borderRadius: 3, barThickness: 16 }]
                 },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 105, grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } } } }
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { max: 105, grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } },
+                        y: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } }
+                    }
+                }
             });
 
-            // 8. Fases (com OnClick Interativo)
+            // 8. Fases
             const ctxFases = document.getElementById('chartFases').getContext('2d');
             charts.fases = new Chart(ctxFases, {
                 type: 'bar',
@@ -1501,15 +1656,11 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    onClick: (evt, activeEls) => {
-                        if (activeEls.length > 0) {
-                            const idx = activeEls[0].index;
-                            const faseName = appState.fases[idx].fase;
-                            applyCrossFilter('fase', faseName);
-                        }
-                    },
                     plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } } }
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } },
+                        y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } }
+                    }
                 }
             });
 
@@ -1520,9 +1671,23 @@
                 type: 'bar',
                 data: {
                     labels: ['Cirurgias', 'SADT', 'Consultas', 'Exames', 'Refeições', 'Adicionais'],
-                    datasets: [{ label: 'Receita (R$)', data: [part.cirurgias, part.sadt, part.consultas, part.exames, part.refeicoes, part.adicionais], backgroundColor: chartColors['part_0'] || '#8b5cf6', borderRadius: 3, barThickness: 20 }]
+                    datasets: [{
+                        label: 'Receita (R$)',
+                        data: [part.cirurgias, part.sadt, part.consultas, part.exames, part.refeicoes, part.adicionais],
+                        backgroundColor: chartColors['part_0'] || '#8b5cf6',
+                        borderRadius: 3,
+                        barThickness: 20
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } },
+                        y: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 }, callback: v => 'R$ ' + (v/1000) + 'k' } }
+                    }
+                }
             });
 
             // 10. Ticket
@@ -1531,20 +1696,111 @@
                 type: 'bar',
                 data: {
                     labels: ['Cirurgias', 'SADT', 'Consultas', 'Exames', 'Adicionais', 'Refeições'],
-                    datasets: [{ label: 'Ticket Médio (R$)', data: part.cirurgias > 0 ? [9000, 9000, 200, 200, 120, 100] : [0,0,0,0,0,0], backgroundColor: chartColors['ticket_0'] || '#06b6d4', borderRadius: 3, barThickness: 14 }]
+                    datasets: [{
+                        label: 'Ticket Médio (R$)',
+                        data: part.cirurgias > 0 ? [9000, 9000, 200, 200, 120, 100] : [0, 0, 0, 0, 0, 0],
+                        backgroundColor: chartColors['ticket_0'] || '#06b6d4',
+                        borderRadius: 3,
+                        barThickness: 14
+                    }]
                 },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 10500, grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } }, y: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } } } }
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { max: 10500, grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } },
+                        y: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } }
+                    }
+                }
+            });
+
+            // 11. NPS Dist
+            const nps = appState.npsData;
+            const ctxNpsDist = document.getElementById('chartNpsDist').getContext('2d');
+            charts.npsDist = new Chart(ctxNpsDist, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Promotores (9-10)', 'Neutros (7-8)', 'Detratores (0-6)'],
+                    datasets: [{
+                        data: nps.total > 0 ? [nps.promotores, nps.neutros, nps.detratores] : [0, 0, 0],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { size: 9 } } } },
+                    cutout: '65%'
+                }
+            });
+
+            // 12. NPS Setor
+            const setorKeys = Object.keys(nps.setores);
+            const setorLabels = setorKeys.length > 0 ? setorKeys : ['Recepção', 'Ambulatório', 'Pronto Atend.', 'Internação'];
+            const setorScores = setorLabels.map(s => {
+                if (nps.setores[s] && nps.setores[s].total > 0) {
+                    const st = nps.setores[s];
+                    return Math.round(((st.prom - st.det) / st.total) * 100);
+                }
+                return 0;
+            });
+
+            const ctxNpsSetor = document.getElementById('chartNpsSetor').getContext('2d');
+            charts.npsSetor = new Chart(ctxNpsSetor, {
+                type: 'bar',
+                data: {
+                    labels: setorLabels,
+                    datasets: [{
+                        label: 'NPS Score',
+                        data: nps.total > 0 ? setorScores : [0, 0, 0, 0],
+                        backgroundColor: chartColors['npsSetor_0'] || '#10b981',
+                        borderRadius: 3,
+                        barThickness: 18
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: c.muted, font: { size: 9 } } },
+                        y: { max: 100, min: -20, grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } }
+                    }
+                }
+            });
+
+            // 13. NPS Evol
+            const ctxNpsEvol = document.getElementById('chartNpsEvol').getContext('2d');
+            charts.npsEvol = new Chart(ctxNpsEvol, {
+                type: 'line',
+                data: {
+                    labels: ['Mar/26', 'Abr/26', 'Mai/26', 'Jun/26'],
+                    datasets: [{
+                        label: 'Score NPS',
+                        data: nps.total > 0 ? [62, 68, 71, nps.score] : [0, 0, 0, 0],
+                        borderColor: chartColors['npsEvol_0'] || '#0ea5e9',
+                        backgroundColor: (chartColors['npsEvol_0'] || '#0ea5e9') + '20',
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } },
+                        y: { max: 100, min: 0, grid: { color: c.grid }, ticks: { color: c.muted, font: { size: 9 } } }
+                    }
+                }
             });
 
             renderAllDraggableLabels();
             restoreLabelToggles();
-        }
-
-        function refreshDashboard() {
-            renderPipelineAndTables();
-            Object.keys(charts).forEach(k => charts[k].destroy());
-            charts = {};
-            initCharts();
         }
 
         // Rótulos de Dados Arrastáveis
@@ -1552,6 +1808,7 @@
             const fatPart = appState.particular.cirurgias + appState.particular.sadt + appState.particular.consultas;
             const fatConv = appState.convenios.reduce((a, b) => a + b.faturado, 0);
             const global = fatPart + fatConv;
+            const nps = appState.npsData;
 
             return {
                 trend: [
@@ -1571,7 +1828,10 @@
                 sla: [{ text: '90 Dias', top: '14%', left: '80%', id: 'sl1' }, { text: '60 Dias', top: '60%', left: '58%', id: 'sl2' }],
                 fases: [{ text: 'R$ 341,3k', top: '18%', left: '10%', id: 'fs1' }, { text: 'R$ 48,2k', top: '65%', left: '24%', id: 'fs2' }],
                 part: [{ text: 'R$ ' + (appState.particular.cirurgias/1000).toFixed(0) + 'k', top: '18%', left: '14%', id: 'pt1' }, { text: 'R$ ' + (appState.particular.sadt/1000).toFixed(0) + 'k', top: '38%', left: '29%', id: 'pt2' }],
-                ticket: [{ text: 'R$ 9.000', top: '12%', left: '82%', id: 'tk1' }, { text: 'R$ 200', top: '44%', left: '22%', id: 'tk2' }]
+                ticket: [{ text: 'R$ 9.000', top: '12%', left: '82%', id: 'tk1' }, { text: 'R$ 200', top: '44%', left: '22%', id: 'tk2' }],
+                npsDist: [{ text: 'Promotores: ' + (nps.total > 0 ? ((nps.promotores/nps.total)*100).toFixed(0) : 0) + '%', top: '30%', left: '20%', id: 'np1' }],
+                npsSetor: [{ text: 'Score: ' + nps.score, top: '18%', left: '22%', id: 'np2' }],
+                npsEvol: [{ text: 'NPS: ' + nps.score, top: '20%', left: '76%', id: 'np3' }]
             };
         }
 
@@ -1710,20 +1970,18 @@
                 const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
                 const convList = [];
 
-                rows.forEach((row, idx) => {
-                    if (!row || row.length < 2) return;
-                    const col1 = String(row[1] || '').trim();
-                    const u1 = col1.toUpperCase();
-
-                    if (u1.includes('SC SAUDE') || u1.includes('SELECT') || u1.includes('GEAP') || u1.includes('CASSI') || u1.includes('BRADESCO')) {
+                for (let r = 1; r < 12; r++) {
+                    const row = rows[r];
+                    if (row && row[1]) {
+                        const operadoraFull = String(row[1]).trim();
+                        const isConsulta = operadoraFull.toLowerCase().includes('consulta');
                         let opName = 'Outros';
-                        if (u1.includes('SC SAUDE')) opName = 'SC Saúde';
-                        else if (u1.includes('SELECT')) opName = 'Select';
-                        else if (u1.includes('GEAP')) opName = 'GEAP';
-                        else if (u1.includes('CASSI')) opName = 'CASSI';
-                        else if (u1.includes('BRADESCO')) opName = 'Bradesco Saúde';
+                        if (operadoraFull.toLowerCase().includes('sc')) opName = 'SC Saúde';
+                        else if (operadoraFull.toLowerCase().includes('select')) opName = 'Select';
+                        else if (operadoraFull.toLowerCase().includes('geap')) opName = 'GEAP';
+                        else if (operadoraFull.toLowerCase().includes('cassi')) opName = 'CASSI';
+                        else if (operadoraFull.toLowerCase().includes('bradesco')) opName = 'Bradesco Saúde';
 
-                        const isConsulta = u1.includes('CONSULTA');
                         convList.push({
                             operadora: opName,
                             segmento: isConsulta ? 'Consultas Médicas' : 'SADT / Cirurgias',
@@ -1735,7 +1993,7 @@
                             glosa: parseFloat(row[6]) || 0.0
                         });
                     }
-                });
+                }
 
                 if (convList.length > 0) {
                     appState.convenios = convList;
@@ -1751,7 +2009,10 @@
                     appState.semanal = { s1: 180400, s2: 395100, s3: 642800, s4: 873250.63, s1_rec: 142000, s2_rec: 310500, s3_rec: 560200, s4_rec: 792014.55 };
 
                     saveState();
-                    refreshDashboard();
+                    renderPipelineAndTables();
+                    Object.keys(charts).forEach(k => charts[k].destroy());
+                    charts = {};
+                    initCharts();
                     notify("Planilha 'Indicador Mensal' importada e processada com sucesso!");
                 }
             } else {
@@ -1770,6 +2031,7 @@
 
             const data = await file.arrayBuffer();
             const workbook = XLSX.read(data, { type: 'array' });
+
             let parsedAny = false;
 
             // Particular
@@ -1808,7 +2070,7 @@
                 parsedAny = true;
             }
 
-            // Governança
+            // Recepção & Governança
             if (workbook.SheetNames.includes('Recepção Hospitalar')) {
                 appState.governanca.esperaMin = 12.4;
                 appState.governanca.faltasPerc = 0.084;
@@ -1818,7 +2080,10 @@
 
             if (parsedAny) {
                 saveState();
-                refreshDashboard();
+                renderPipelineAndTables();
+                Object.keys(charts).forEach(k => charts[k].destroy());
+                charts = {};
+                initCharts();
                 notify("Planilha 'Dashboard Auditoria' importada e processada com sucesso!");
             } else {
                 notify("Estrutura da planilha de auditoria não reconhecida.");
@@ -1826,9 +2091,88 @@
             inputAuditoria.value = '';
         });
 
-        // Eventos dos Filtros Selecionáveis
-        document.getElementById('selOperadora').addEventListener('change', refreshDashboard);
-        document.getElementById('selCompetencia').addEventListener('change', refreshDashboard);
+        // --- BOTÃO 3: UPLOAD DE "ALTERAÇÃO NPS.XLSX" (ABA "RESPOSTAS") ---
+        const inputNps = document.getElementById('fileInputNps');
+        document.getElementById('btnUploadNps').addEventListener('click', () => inputNps.click());
+
+        inputNps.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const targetSheetName = workbook.SheetNames.find(s => 
+                s.toLowerCase().includes('resposta') || 
+                s.toLowerCase().includes('nps') || 
+                s.toLowerCase().includes('pesquisa')
+            ) || workbook.SheetNames[0];
+
+            if (targetSheetName) {
+                const wsNps = workbook.Sheets[targetSheetName];
+                const rawRows = XLSX.utils.sheet_to_json(wsNps);
+
+                let promotores = 0, neutros = 0, detratores = 0;
+                const setorMap = {};
+                const feedbackList = [];
+
+                rawRows.forEach(row => {
+                    const keys = Object.keys(row);
+                    const scoreKey = keys.find(k => k.toLowerCase().includes('nota') || k.toLowerCase().includes('recomend') || k.toLowerCase().includes('nps') || k.toLowerCase().includes('score') || k.toLowerCase().includes('0 a 10'));
+                    const setorKey = keys.find(k => k.toLowerCase().includes('setor') || k.toLowerCase().includes('área') || k.toLowerCase().includes('atendimento') || k.toLowerCase().includes('unidade') || k.toLowerCase().includes('local'));
+                    const commentKey = keys.find(k => k.toLowerCase().includes('motivo') || k.toLowerCase().includes('comentá') || k.toLowerCase().includes('opiniã') || k.toLowerCase().includes('feedback') || k.toLowerCase().includes('observa'));
+                    const dateKey = keys.find(k => k.toLowerCase().includes('data') || k.toLowerCase().includes('carimbo') || k.toLowerCase().includes('time'));
+
+                    const score = scoreKey ? parseInt(row[scoreKey]) : (typeof row[keys[1]] === 'number' ? parseInt(row[keys[1]]) : NaN);
+
+                    if (!isNaN(score) && score >= 0 && score <= 10) {
+                        let cat = 'Neutro';
+                        if (score >= 9) { promotores++; cat = 'Promotor'; }
+                        else if (score >= 7) { neutros++; cat = 'Neutro'; }
+                        else { detratores++; cat = 'Detrator'; }
+
+                        const setor = setorKey && row[setorKey] ? String(row[setorKey]).trim() : 'Recepção / Geral';
+                        if (!setorMap[setor]) setorMap[setor] = { prom: 0, neu: 0, det: 0, total: 0 };
+                        setorMap[setor].total++;
+                        if (score >= 9) setorMap[setor].prom++;
+                        else if (score >= 7) setorMap[setor].neu++;
+                        else setorMap[setor].det++;
+
+                        feedbackList.push({
+                            data: dateKey && row[dateKey] ? String(row[dateKey]).substring(0, 10) : 'Jun/2026',
+                            setor: setor,
+                            nota: score,
+                            categoria: cat,
+                            comentario: commentKey && row[commentKey] ? String(row[commentKey]) : 'Sem comentário registrado'
+                        });
+                    }
+                });
+
+                const totalResp = promotores + neutros + detratores;
+                if (totalResp > 0) {
+                    const scoreNps = Math.round(((promotores - detratores) / totalResp) * 100);
+                    appState.npsData = {
+                        score: scoreNps,
+                        promotores: promotores,
+                        neutros: neutros,
+                        detratores: detratores,
+                        total: totalResp,
+                        setores: setorMap,
+                        feedbacks: feedbackList
+                    };
+
+                    saveState();
+                    renderPipelineAndTables();
+                    Object.keys(charts).forEach(k => charts[k].destroy());
+                    charts = {};
+                    initCharts();
+                    notify(`Pesquisa NPS importada! ${totalResp} respostas processadas com Score +${scoreNps}.`);
+                } else {
+                    notify("Aba de pesquisa lida, mas não identificamos colunas numéricas de notas (0 a 10).");
+                }
+            }
+            inputNps.value = '';
+        });
 
         // Persistência de Textos Editáveis
         document.querySelectorAll('[data-persist]').forEach(el => {
@@ -1849,7 +2193,6 @@
                 labelPositions = {};
                 labelVisibility = {};
                 chartColors = {};
-                activeCrossFilter = null;
                 location.reload();
             }
         });
@@ -1860,7 +2203,7 @@
             document.body.classList.toggle('edit-mode-active');
             const isActive = document.body.classList.contains('edit-mode-active');
             btnToggleEdit.classList.toggle('active-state', isActive);
-            btnToggleEdit.textContent = isActive ? 'Modo Edição: Ativo' : 'Modo Edição de Textos';
+            btnToggleEdit.textContent = isActive ? 'Modo Edição: Ativo' : 'Modo Edição';
         });
 
         // Alternador de Tema
